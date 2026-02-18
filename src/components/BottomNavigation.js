@@ -34,8 +34,8 @@ const BottomNavigation = () => {
         <View style={[
             styles.container,
             {
-                paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
-                height: 48 + (insets.bottom > 0 ? insets.bottom : 0)
+                paddingBottom: insets.bottom > 0 ? insets.bottom : 4,
+                height: 42 + (insets.bottom > 0 ? insets.bottom : 0)
             }
         ]}>
             <TabItem
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-around',
         alignItems: 'center',
         backgroundColor: COLORS.white,
-        paddingTop: 4,
+        paddingTop: 2,
         borderTopWidth: 1,
         borderTopColor: 'rgba(0,0,0,0.05)',
         ...Platform.select({
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     },
     activeIndicator: {
         position: 'absolute',
-        top: -4,
+        top: -2,
         width: 18,
         height: 3,
         backgroundColor: COLORS.primary,
