@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "heritage",
+    "slug": "heritage",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/heritej-pulse-logo.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/heritej-pulse-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.dayaraju.heritage",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/heritej-pulse-logo.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.dayaraju.heritage"
+    },
+    "web": {
+      "favicon": "./assets/images/heritej-pulse-logo.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "69746e61-6feb-469c-b85c-447577afa62d"
+      }
+    },
+    "owner": "surendra.pleach"
+  }
+}
