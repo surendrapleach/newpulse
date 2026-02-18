@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { View, Image, StyleSheet, Modal, Dimensions } from "react-native";
+import { View, Image, StyleSheet, Modal, Dimensions, Text, Platform } from "react-native";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withSpring,
     withTiming,
+    withRepeat,
     withSequence,
-    withDelay
+    withDelay,
+    Easing
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../utils/theme";
@@ -15,99 +18,89 @@ import { COLORS } from "../../utils/theme";
 const { width } = Dimensions.get('window');
 
 const AuthLoading = ({ visible = false }) => {
-    const [message, setMessage] = useState("Verifying credentials...");
+    const [message, setMessage] = useState("Securing access...");
 
     // Animation Values
-    const scale = useSharedValue(0);
+    const scale = useSharedValue(0.9);
     const opacity = useSharedValue(0);
-    const textOpacity = useSharedValue(0);
+    const progress = useSharedValue(0);
+    const cardTranslateY = useSharedValue(20);
 
     useEffect(() => {
         if (visible) {
             // Reset animations
-            scale.value = 0;
-            opacity.value = 0;
-            textOpacity.value = 0;
-            setMessage("Verifying credentials...");
+            opacity.value = withTiming(1, { duration: 400 });
+            cardTranslateY.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.back(1.5)) });
 
-            // Start animations
-            opacity.value = withTiming(1, { duration: 500 });
-            scale.value = withSpring(1, { damping: 12 });
-            textOpacity.value = withTiming(1, { duration: 800 });
+            // Pulse the logo
+            scale.value = withRepeat(
+                withTiming(1.1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
+                -1,
+                true
+            );
 
-            // Sequence of messages
-            const t1 = setTimeout(() => {
-                textOpacity.value = 0;
-                setTimeout(() => {
-                    setMessage("Securing connection...");
-                    textOpacity.value = withTiming(1, { duration: 500 });
-                }, 300);
-            }, 1200);
+            // Progress bar animation
+            progress.value = withTiming(1, { duration: 2000 });
 
-            const t2 = setTimeout(() => {
-                textOpacity.value = 0;
-                setTimeout(() => {
-                    setMessage("Successfully Authenticated!");
-                    textOpacity.value = withTiming(1, { duration: 500 });
-                }, 300);
-            }, 2400);
+            // Message sequence
+            const t1 = setTimeout(() => setMessage("Verifying identity..."), 600);
+            const t2 = setTimeout(() => setMessage("Welcome!"), 1400);
 
             return () => {
                 clearTimeout(t1);
                 clearTimeout(t2);
             };
+        } else {
+            opacity.value = withTiming(0, { duration: 300 });
+            progress.value = 0;
+            scale.value = 0.9;
         }
     }, [visible]);
 
-    const animatedIconStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ scale: scale.value }],
-            opacity: opacity.value,
-        };
-    });
+    const animatedCardStyle = useAnimatedStyle(() => ({
+        opacity: opacity.value,
+        transform: [{ translateY: cardTranslateY.value }]
+    }));
 
-    const animatedTextStyle = useAnimatedStyle(() => {
-        return {
-            opacity: textOpacity.value,
-        };
-    });
+    const animatedLogoStyle = useAnimatedStyle(() => ({
+        transform: [{ scale: scale.value }]
+    }));
+
+    const animatedProgressStyle = useAnimatedStyle(() => ({
+        width: `${progress.value * 100}%`
+    }));
 
     if (!visible) return null;
 
     return (
-        <Modal transparent visible={visible} animationType="fade">
+        <Modal transparent visible={visible} animationType="none">
             <View style={styles.container}>
-                {/* Background Image */}
-                <Image
-                    source={require("../../../assets/images/success-loading.gif")}
-                    style={styles.backgroundImage}
-                    resizeMode="cover"
+                <BlurView intensity={20} tint="light" style={StyleSheet.absoluteFill} />
+                <LinearGradient
+                    colors={['rgba(255, 209, 102, 0.4)', 'rgba(255, 249, 251, 0.8)']}
+                    style={StyleSheet.absoluteFill}
                 />
 
-                {/* Blur Overlay */}
-                <BlurView intensity={80} tint="dark" style={styles.blurContainer}>
-                    <View style={styles.content}>
-                        <Animated.View style={[styles.iconContainer, animatedIconStyle]}>
-                            <Ionicons name="shield-checkmark" size={60} color={COLORS.success || '#4CAF50'} />
-                        </Animated.View>
+                <Animated.View style={[styles.glassCard, animatedCardStyle]}>
+                    <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
+                        <Image
+                            source={require("../../../assets/images/heritej-pulse-logo.png")}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                    </Animated.View>
 
-                        <Animated.Text style={[styles.loadingText, animatedTextStyle]}>
-                            {message}
-                        </Animated.Text>
+                    <Text style={styles.loadingText}>{message}</Text>
 
-                        {/* Simple loading indicator bar */}
-                        <View style={styles.loadingBarContainer}>
-                            <Animated.View
-                                style={[
-                                    styles.loadingBar,
-                                    {
-                                        width: withTiming(visible ? '100%' : '0%', { duration: 3000 })
-                                    }
-                                ]}
-                            />
-                        </View>
+                    <View style={styles.progressBarWrapper}>
+                        <Animated.View style={[styles.progressBar, animatedProgressStyle]} />
                     </View>
-                </BlurView>
+
+                    <View style={styles.iconRow}>
+                        <Ionicons name="lock-closed" size={14} color={COLORS.primary} />
+                        <Text style={styles.secureLink}>End-to-end encrypted</Text>
+                    </View>
+                </Animated.View>
             </View>
         </Modal>
     );
@@ -116,58 +109,72 @@ const AuthLoading = ({ visible = false }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    backgroundImage: {
-        ...StyleSheet.absoluteFillObject,
-        width: '100%',
-        height: '100%',
-    },
-    blurContainer: {
-        flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.1)',
     },
-    content: {
-        alignItems: 'center',
-        justifyContent: 'center',
+    glassCard: {
+        width: width * 0.85,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderRadius: 30,
         padding: 30,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        alignItems: 'center',
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 10 },
+        shadowOpacity: 0.1,
+        shadowRadius: 20,
+        elevation: 15,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-        width: width * 0.8,
+        borderColor: 'rgba(255, 255, 255, 0.6)',
     },
-    iconContainer: {
-        marginBottom: 20,
-        backgroundColor: 'rgba(255,255,255,0.9)',
+    logoContainer: {
+        width: 100,
+        height: 100,
+        backgroundColor: '#FFF',
         borderRadius: 50,
-        padding: 15,
-        elevation: 10,
-        shadowColor: COLORS.success || '#4CAF50',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.5,
-        shadowRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 24,
+        shadowColor: COLORS.primary,
+        shadowOffset: { width: 0, height: 5 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+    },
+    logo: {
+        width: 65,
+        height: 65,
     },
     loadingText: {
         fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white',
-        letterSpacing: 0.5,
-        marginBottom: 20,
+        fontWeight: '700',
+        color: COLORS.primary,
         textAlign: 'center',
+        marginBottom: 24,
+        letterSpacing: 0.2,
     },
-    loadingBarContainer: {
+    progressBarWrapper: {
         width: '100%',
         height: 6,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        borderRadius: 3,
+        backgroundColor: 'rgba(235, 106, 0, 0.1)',
+        borderRadius: 10,
         overflow: 'hidden',
+        marginBottom: 20,
     },
-    loadingBar: {
+    progressBar: {
         height: '100%',
-        backgroundColor: COLORS.success || '#4CAF50',
-        borderRadius: 3,
+        backgroundColor: COLORS.primary,
+        borderRadius: 10,
+    },
+    iconRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        opacity: 0.5,
+    },
+    secureLink: {
+        fontSize: 12,
+        color: COLORS.text,
+        fontWeight: '600',
     },
 });
 

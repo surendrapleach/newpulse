@@ -164,7 +164,7 @@ const MainLayout = () => {
     currentScreen !== SCREENS.FORGOT_PASSWORD;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="dark" backgroundColor={COLORS.background} />
       <ScreenRenderer />
       {shouldShowTabs && <BottomNavigation />}

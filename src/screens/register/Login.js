@@ -46,7 +46,7 @@ const Login = () => {
         setTimeout(() => {
             setIsLoading(false);
             navigate(SCREENS.HOME);
-        }, 4000);
+        }, 1500);
     };
 
     return (

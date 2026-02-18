@@ -35,6 +35,9 @@
         "projectId": "69746e61-6feb-469c-b85c-447577afa62d"
       }
     },
-    "owner": "surendra.pleach"
+    "owner": "surendra.pleach",
+    "plugins": [
+      "expo-web-browser"
+    ]
   }
 }

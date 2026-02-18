@@ -263,7 +263,7 @@ const truncate = (text, limit) => {
 const mapArticle = (a) => ({
     ...a,
     headline: truncate(a.headline || a.title, 60),
-    content: truncate(a.content, 550),
+    content: truncate(a.content, 300),
     image: (typeof a.image === 'string' && a.image) ? { uri: a.image } : a.image, // Handle remote/local images
     publisher: a.publisher || (a.id === "l2" ? "Deccan Chronicle" : a.id === "l3" ? "New Indian Express" : "Heritage Pulse"),
     timestamp: a.timestamp || "Just now",
