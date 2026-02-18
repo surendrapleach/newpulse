@@ -21,6 +21,7 @@ import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withSpring,
+    withTiming,
     runOnJS,
     interpolate,
     Extrapolate
@@ -69,9 +70,8 @@ const SourceWebModal = ({ visible, url, onClose }) => {
         })
         .onEnd((event) => {
             if (event.translationY > 150 || event.velocityY > 500) {
-                translateY.value = withSpring(SCREEN_HEIGHT, { velocity: event.velocityY }, () => {
+                translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
                     runOnJS(onClose)();
-                    translateY.value = 0;
                 });
             } else {
                 translateY.value = withSpring(0);
