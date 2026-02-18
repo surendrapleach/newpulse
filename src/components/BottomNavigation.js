@@ -1,27 +1,28 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, SCREENS } from '../services/NavigationContext';
-import { COLORS } from '../utils/theme';
-import { useLanguage } from '../services/LanguageContext';
-
+import { useTheme } from '../services/ThemeContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const TabItem = ({ icon, screenName, active, onPress }) => (
-    <TouchableOpacity style={styles.tabItem} onPress={() => onPress(screenName)} activeOpacity={0.7}>
-        <View style={styles.iconContainer}>
-            {active && <View style={styles.activeIndicator} />}
-            <Ionicons
-                name={active ? icon : `${icon}-outline`}
-                size={26}
-                color={active ? COLORS.primary : COLORS.secondaryText}
-            />
-        </View>
-    </TouchableOpacity>
-);
+const TabItem = ({ icon, screenName, active, onPress }) => {
+    const { colors } = useTheme();
+    return (
+        <TouchableOpacity style={styles.tabItem} onPress={() => onPress(screenName)} activeOpacity={0.7}>
+            <View style={styles.iconContainer}>
+                <Ionicons
+                    name={active ? icon : `${icon}-outline`}
+                    size={26}
+                    color={active ? colors.primary : colors.secondaryText}
+                />
+            </View>
+        </TouchableOpacity>
+    );
+};
 
 const BottomNavigation = () => {
     const { currentScreen, navigate } = useNavigation();
+    const { colors, isDark } = useTheme();
     const insets = useSafeAreaInsets();
 
     // Don't show bottom nav on Splash
@@ -34,8 +35,11 @@ const BottomNavigation = () => {
         <View style={[
             styles.container,
             {
-                paddingBottom: insets.bottom > 0 ? insets.bottom : 4,
-                height: 42 + (insets.bottom > 0 ? insets.bottom : 0)
+                paddingBottom: insets.bottom > 0 ? insets.bottom * 0.3 : 2,
+                height: 38 + (insets.bottom > 0 ? insets.bottom * 0.3 : 0),
+                backgroundColor: colors.navBg,
+                borderTopWidth: 0,
+                elevation: isDark ? 0 : 8,
             }
         ]}>
             <TabItem
@@ -65,19 +69,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-around',
         alignItems: 'center',
-        backgroundColor: COLORS.white,
-        paddingTop: 2,
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(0,0,0,0.05)',
+        paddingTop: 1,
         ...Platform.select({
             ios: {
                 shadowColor: '#000',
                 shadowOffset: { width: 0, height: -2 },
                 shadowOpacity: 0.05,
                 shadowRadius: 4,
-            },
-            android: {
-                elevation: 8,
             },
             web: {
                 boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.03)',
@@ -91,14 +89,6 @@ const styles = StyleSheet.create({
     },
     iconContainer: {
         alignItems: 'center',
-    },
-    activeIndicator: {
-        position: 'absolute',
-        top: -2,
-        width: 18,
-        height: 3,
-        backgroundColor: COLORS.primary,
-        borderRadius: 2,
     },
 });
 

@@ -35,8 +35,8 @@ const SplashScreen = () => {
 
         // Navigate after sequence
         const timeout = setTimeout(() => {
-            navigate(SCREENS.REGISTER);
-        }, 2000);
+            navigate(SCREENS.HOME);
+        }, 3000);
 
         return () => clearTimeout(timeout);
     }, []);
