@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, SCREENS } from "../../services/NavigationContext";
 import { useTheme } from "../../services/ThemeContext";
 import { useLanguage } from "../../services/LanguageContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ const LanguageScreen = () => {
   const { goBack, navigate } = useNavigation();
   const { language, setLanguage, t, languages } = useLanguage();
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const labelKeyByCode = {
     en: "language_english",
@@ -21,7 +23,10 @@ const LanguageScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View style={[styles.header, {
+        borderBottomColor: colors.border,
+        paddingTop: Math.max(insets.top, 16)
+      }]}>
         <TouchableOpacity
           onPress={() => goBack ? goBack() : navigate(SCREENS.PROFILE)}
           style={[styles.backBtn, { backgroundColor: colors.cardBg }]}

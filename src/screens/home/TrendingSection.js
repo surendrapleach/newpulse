@@ -89,18 +89,11 @@ const TrendingSection = ({ onShowToast }) => {
     const data = useMemo(() => MockDataService.getTrendingArticles(language), [language]);
 
     const handlePress = (item) => {
-        navigate(SCREENS.DETAIL, { articleId: item.id });
+        navigate(SCREENS.HOME, { articleId: item.id });
     };
 
     const handleSeeAll = () => {
-        navigate(SCREENS.EXPLORE_SECTION_GRID, {
-            sectionKey: "culturalEvents",
-            titleKey: "explore_trending_title",
-            subtitleKey: "explore_trending_subtitle",
-            title: t("explore_trending_title"),
-            subtitle: t("explore_trending_subtitle"),
-            items: data,
-        });
+        navigate(SCREENS.HOME, { categoryKey: 'trending' });
     };
 
     return (

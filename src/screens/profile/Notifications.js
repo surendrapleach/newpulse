@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../services/ThemeContext";
 import { useNavigation, SCREENS } from "../../services/NavigationContext";
 import { useLanguage } from "../../services/LanguageContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "../../components/Toast";
 import { NOTIFICATIONS } from "../../data/mockData";
 import { truncateText } from "../../utils/textUtils";
@@ -77,8 +78,9 @@ const Notifications = () => {
 
     const { t } = useLanguage();
     const { colors, isDarkMode } = useTheme();
+    const insets = useSafeAreaInsets();
 
-    const styles = useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
+    const styles = useMemo(() => getStyles(colors, isDarkMode, insets), [colors, isDarkMode, insets]);
 
     const notifications = NOTIFICATIONS;
 
@@ -162,7 +164,7 @@ const Notifications = () => {
     );
 };
 
-const getStyles = (colors, isDarkMode) => StyleSheet.create({
+const getStyles = (colors, isDarkMode, insets) => StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: colors.background,
@@ -172,7 +174,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         backgroundColor: colors.background,
     },
     header: {
-        paddingTop: Platform.OS === 'android' ? 20 : 10,
+        paddingTop: Math.max(insets.top, 10),
         paddingBottom: 20,
         paddingHorizontal: 20,
         backgroundColor: colors.background,

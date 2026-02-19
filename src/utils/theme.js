@@ -18,12 +18,12 @@ export const PALETTE = {
     splashGradientStart: '#FFD166',
     splashGradientEnd: '#FFF9FB',
 
-    // Dark specifics (Pure Emerald & White)
-    darkBackground: '#003409ff',
-    darkSurface: '#266330',    // Raised Emerald for cards
+    // Dark specifics (Ultra Black & White)
+    darkBackground: '#000000',
+    darkSurface: '#121212',    // Slightly raised black for cards
     darkText: '#FFFFFF',       // Pure White
-    darkSecondaryText: '#B2C2B5', // Silver-Mint
-    darkBorder: '#3D8246',     // Emerald Boundary
+    darkSecondaryText: '#A0A0A0', // Muted Silver
+    darkBorder: '#222222',     // Dark Gray Boundary
 };
 
 export const LIGHT_THEME = {
@@ -31,7 +31,7 @@ export const LIGHT_THEME = {
     primary: PALETTE.primary,
     secondary: PALETTE.secondary,
     text: PALETTE.text,
-    secondaryText: PALETTE.black,
+    secondaryText: '#666666',
     cardBg: PALETTE.white,
     border: PALETTE.border,
     icon: PALETTE.text,
@@ -41,12 +41,13 @@ export const LIGHT_THEME = {
     splashGradientStart: PALETTE.splashGradientStart,
     splashGradientEnd: PALETTE.splashGradientEnd,
     success: PALETTE.success,
+    navBg: PALETTE.background, // Match parchment background
 };
 
 export const DARK_THEME = {
     background: PALETTE.darkBackground,
     primary: PALETTE.white,   // Interactive elements now White
-    secondary: '#327A3D',     // Subtler green accent
+    secondary: '#333333',     // Dark accent
     text: PALETTE.darkText,
     secondaryText: PALETTE.darkSecondaryText,
     cardBg: PALETTE.darkSurface,
@@ -55,13 +56,18 @@ export const DARK_THEME = {
     error: PALETTE.error,
     white: PALETTE.white,
     black: PALETTE.black,
-    splashGradientStart: PALETTE.splashGradientStart,
-    splashGradientEnd: PALETTE.splashGradientEnd,
+    splashGradientStart: '#000000',
+    splashGradientEnd: '#1A1A1A',
     success: PALETTE.success,
+    navBg: PALETTE.darkBackground, // Pure Black for nav
 };
 
-// Default export for backward compatibility
-export const COLORS = LIGHT_THEME;
+// Unified COLORS object for legacy support
+export const COLORS = {
+    ...LIGHT_THEME, // Default to LIGHT for safety
+};
+
+export default COLORS;
 
 export const SPACING = {
     xs: 4,

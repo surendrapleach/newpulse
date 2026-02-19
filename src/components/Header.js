@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, StatusBar, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, StatusBar, Platform, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, SCREENS } from '../services/NavigationContext';
 import { useLanguage } from '../services/LanguageContext';
 import { useTheme } from '../services/ThemeContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const Header = () => {
+const Header = ({ scrollY }) => {
     const { navigate } = useNavigation();
     const { t } = useLanguage();
     const { colors } = useTheme();
+    const insets = useSafeAreaInsets();
     const [placeholder, setPlaceholder] = useState('');
     const [index, setIndex] = useState(0);
     const [subIndex, setSubIndex] = useState(0);
@@ -62,9 +64,48 @@ const Header = () => {
         setPlaceholder(phrases[index].substring(0, subIndex));
     }, [subIndex, index, phrases]);
 
+    // Header Animations
+    const headerTranslateY = scrollY ? scrollY.interpolate({
+        inputRange: [0, 50],
+        outputRange: [0, -30],
+        extrapolate: 'clamp',
+    }) : 0;
+
+    const headerOpacity = scrollY ? scrollY.interpolate({
+        inputRange: [0, 40],
+        outputRange: [1, 0],
+        extrapolate: 'clamp',
+    }) : 1;
+
+    const headerHeight = scrollY ? scrollY.interpolate({
+        inputRange: [0, 60],
+        outputRange: [60, 0],
+        extrapolate: 'clamp',
+    }) : 60;
+
     return (
-        <View style={[styles.container, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-            <View style={styles.headerContainer}>
+        <View style={[
+            styles.container,
+            {
+                backgroundColor: colors.background,
+                borderBottomColor: colors.border,
+                paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : Math.max(insets.top, 8)
+            }
+        ]}>
+            <Animated.View style={[
+                styles.headerContainer,
+                {
+                    opacity: headerOpacity,
+                    transform: [{ translateY: headerTranslateY }],
+                    height: headerHeight,
+                    marginBottom: scrollY ? scrollY.interpolate({
+                        inputRange: [0, 60],
+                        outputRange: [16, 0],
+                        extrapolate: 'clamp'
+                    }) : 16,
+                    overflow: 'hidden'
+                }
+            ]}>
                 <View>
                     <Text style={[styles.title, { color: colors.primary }]}>{t("header_title")}</Text>
                     <Text style={[styles.subtitle, { color: colors.secondaryText }]}>{t("header_subtitle")}</Text>
@@ -77,7 +118,7 @@ const Header = () => {
                     <Ionicons name="notifications-outline" size={26} color={colors.text} />
                     <View style={[styles.notificationDot, { borderColor: colors.cardBg }]} />
                 </TouchableOpacity>
-            </View>
+            </Animated.View>
 
             {/* Search Bar with Typing Animation */}
             <TouchableOpacity

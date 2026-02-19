@@ -16,7 +16,6 @@ export const SCREENS = {
     EXPLORE_SECTION_GRID: 'EXPLORE_SECTION_GRID',
     SAVED: 'SAVED',
     PROFILE: 'PROFILE',
-    DETAIL: 'DETAIL',
     REGISTER: 'REGISTER',
     LOGIN: 'LOGIN',
     SIGNUP: 'SIGNUP',
@@ -26,6 +25,7 @@ export const SCREENS = {
     LANGUAGE: 'LANGUAGE',
     CHANGE_PASSWORD: 'CHANGE_PASSWORD',
     EDIT_PROFILE: 'EDIT_PROFILE',
+    AUTO_SCROLLING: 'AUTO_SCROLLING',
 };
 
 export const NavigationProvider = ({ children }) => {
@@ -50,10 +50,7 @@ export const NavigationProvider = ({ children }) => {
             return;
         }
         // Fallbacks if no previous screen is tracked
-        if (currentScreen === SCREENS.DETAIL) {
-            setCurrentScreen(SCREENS.HOME);
-            setIsTabBarVisible(true);
-        } else if (currentScreen === SCREENS.EXPLORE_SECTION_LIST || currentScreen === SCREENS.EXPLORE_SECTION_GRID) {
+        if (currentScreen === SCREENS.EXPLORE_SECTION_LIST || currentScreen === SCREENS.EXPLORE_SECTION_GRID) {
             setCurrentScreen(SCREENS.EXPLORE);
             setIsTabBarVisible(true);
         }

@@ -35,8 +35,8 @@ const BottomNavigation = () => {
         <View style={[
             styles.container,
             {
-                paddingBottom: insets.bottom > 0 ? insets.bottom * 0.3 : 2,
-                height: 38 + (insets.bottom > 0 ? insets.bottom * 0.3 : 0),
+                paddingBottom: Platform.OS === 'android' ? Math.max(insets.bottom, 4) : Math.max(insets.bottom * 0.3, 2),
+                height: 52 + (Platform.OS === 'android' ? Math.max(insets.bottom, 0) : insets.bottom * 0.3),
                 backgroundColor: colors.navBg,
                 borderTopWidth: 0,
                 elevation: isDark ? 0 : 8,
@@ -45,13 +45,19 @@ const BottomNavigation = () => {
             <TabItem
                 icon="compass"
                 screenName={SCREENS.EXPLORE}
-                active={getActive(SCREENS.EXPLORE) || getActive(SCREENS.EXPLORE_SECTION_GRID)}
+                active={getActive(SCREENS.EXPLORE)}
                 onPress={navigate}
             />
             <TabItem
                 icon="home"
                 screenName={SCREENS.HOME}
-                active={getActive(SCREENS.HOME) || getActive(SCREENS.DETAIL)}
+                active={getActive(SCREENS.HOME)}
+                onPress={navigate}
+            />
+            <TabItem
+                icon="bookmark"
+                screenName={SCREENS.SAVED}
+                active={getActive(SCREENS.SAVED)}
                 onPress={navigate}
             />
             <TabItem

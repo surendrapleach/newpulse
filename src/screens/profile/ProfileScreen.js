@@ -5,9 +5,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation, SCREENS } from "../../services/NavigationContext";
 import { MockDataService } from "../../data/mockData";
 import { useLanguage } from "../../services/LanguageContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Loading from "../../components/loading/Loading";
 import Toast from "../../components/Toast";
-import { COLORS } from "../../utils/theme";
 
 const { width } = Dimensions.get('window');
 
@@ -110,6 +110,7 @@ const ProfileScreen = () => {
   const { navigate } = useNavigation();
   const { t, language } = useLanguage();
   const { colors, isDarkMode, toggleTheme } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoScrollEnabled, setAutoScrollEnabled] = useState(true);
@@ -154,8 +155,8 @@ const ProfileScreen = () => {
   }
 
   return (
-    <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
-      <View style={[styles.headerActions, { zIndex: 10 }]}>
+    <View style={[styles.safeArea, { backgroundColor: colors.background, paddingTop: Math.max(insets.top, 5) }]}>
+      <View style={[styles.headerActions, { zIndex: 10, top: Math.max(insets.top, 5) + 10 }]}>
         <AnimatedButton
           style={[styles.refreshButton, { backgroundColor: colors.cardBg }]}
           onPress={() => {
@@ -163,7 +164,7 @@ const ProfileScreen = () => {
             setTimeout(() => setIsLoading(false), 2000);
           }}
         >
-          <Ionicons name="refresh" size={20} color={COLORS.primary} />
+          <Ionicons name="refresh" size={20} color={colors.primary} />
         </AnimatedButton>
       </View>
 
@@ -254,7 +255,6 @@ const styles = StyleSheet.create({
   },
   headerActions: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 0 : 20,
     right: 20,
     zIndex: 100,
   },

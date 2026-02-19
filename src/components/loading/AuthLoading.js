@@ -13,11 +13,12 @@ import Animated, {
     Easing
 } from "react-native-reanimated";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../utils/theme";
+import { useTheme } from "../../services/ThemeContext";
 
 const { width } = Dimensions.get('window');
 
 const AuthLoading = ({ visible = false }) => {
+    const { colors } = useTheme();
     const [message, setMessage] = useState("Securing access...");
 
     // Animation Values
@@ -81,8 +82,8 @@ const AuthLoading = ({ visible = false }) => {
                     style={StyleSheet.absoluteFill}
                 />
 
-                <Animated.View style={[styles.glassCard, animatedCardStyle]}>
-                    <Animated.View style={[styles.logoContainer, animatedLogoStyle]}>
+                <Animated.View style={[styles.glassCard, animatedCardStyle, { shadowColor: colors.primary }]}>
+                    <Animated.View style={[styles.logoContainer, animatedLogoStyle, { shadowColor: colors.primary }]}>
                         <Image
                             source={require("../../../assets/images/heritej-pulse-logo.png")}
                             style={styles.logo}
@@ -90,15 +91,15 @@ const AuthLoading = ({ visible = false }) => {
                         />
                     </Animated.View>
 
-                    <Text style={styles.loadingText}>{message}</Text>
+                    <Text style={[styles.loadingText, { color: colors.primary }]}>{message}</Text>
 
-                    <View style={styles.progressBarWrapper}>
-                        <Animated.View style={[styles.progressBar, animatedProgressStyle]} />
+                    <View style={[styles.progressBarWrapper, { backgroundColor: `${colors.primary}20` }]}>
+                        <Animated.View style={[styles.progressBar, animatedProgressStyle, { backgroundColor: colors.primary }]} />
                     </View>
 
                     <View style={styles.iconRow}>
-                        <Ionicons name="lock-closed" size={14} color={COLORS.primary} />
-                        <Text style={styles.secureLink}>End-to-end encrypted</Text>
+                        <Ionicons name="lock-closed" size={14} color={colors.primary} />
+                        <Text style={[styles.secureLink, { color: colors.text }]}>End-to-end encrypted</Text>
                     </View>
                 </Animated.View>
             </View>
@@ -119,7 +120,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         padding: 30,
         alignItems: 'center',
-        shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 10 },
         shadowOpacity: 0.1,
         shadowRadius: 20,
@@ -135,7 +135,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 24,
-        shadowColor: COLORS.primary,
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.1,
         shadowRadius: 10,
@@ -147,7 +146,6 @@ const styles = StyleSheet.create({
     loadingText: {
         fontSize: 18,
         fontWeight: '700',
-        color: COLORS.primary,
         textAlign: 'center',
         marginBottom: 24,
         letterSpacing: 0.2,
@@ -155,14 +153,12 @@ const styles = StyleSheet.create({
     progressBarWrapper: {
         width: '100%',
         height: 6,
-        backgroundColor: 'rgba(235, 106, 0, 0.1)',
         borderRadius: 10,
         overflow: 'hidden',
         marginBottom: 20,
     },
     progressBar: {
         height: '100%',
-        backgroundColor: COLORS.primary,
         borderRadius: 10,
     },
     iconRow: {
@@ -173,7 +169,6 @@ const styles = StyleSheet.create({
     },
     secureLink: {
         fontSize: 12,
-        color: COLORS.text,
         fontWeight: '600',
     },
 });

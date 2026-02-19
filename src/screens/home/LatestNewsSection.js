@@ -85,18 +85,11 @@ const LatestNewsSection = ({ onShowToast }) => {
     const data = useMemo(() => MockDataService.getLatestNews(language), [language]);
 
     const handlePress = (item) => {
-        navigate(SCREENS.DETAIL, { articleId: item.id, item });
+        navigate(SCREENS.HOME, { articleId: item.id, item });
     };
 
     const handleSeeAll = () => {
-        navigate(SCREENS.EXPLORE_SECTION_GRID, {
-            sectionKey: "topNews",
-            titleKey: "explore_top_news_title",
-            subtitleKey: "explore_top_news_subtitle",
-            title: t("explore_top_news_title"),
-            subtitle: t("explore_top_news_subtitle"),
-            items: data,
-        });
+        navigate(SCREENS.HOME, { categoryKey: 'news' });
     };
 
     return (

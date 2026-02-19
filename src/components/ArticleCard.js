@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, Image, Dimensions, Animated, TouchableWithoutFeedback, Easing, TouchableOpacity, Share } from 'react-native';
-import { COLORS } from '../utils/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { MockDataService } from '../data/mockData';
 import { useNavigation } from '../services/NavigationContext';
@@ -96,7 +95,7 @@ const ArticleCard = ({ article, isActive }) => {
 
                 {/* 2. Source Badge */}
                 <Animated.View style={[styles.sourceBadge, { opacity: visibilityAnim }]}>
-                    <View style={styles.sourceIcon}>
+                    <View style={[styles.sourceIcon, { backgroundColor: colors.primary }]}>
                         <Text style={styles.sourceInitial}>{article.publisher?.[0] || 'P'}</Text>
                     </View>
                     <Text style={styles.sourceName}>{article.publisher}</Text>
@@ -170,7 +169,6 @@ const styles = StyleSheet.create({
     container: {
         width: width,
         height: height,
-        backgroundColor: COLORS.black, // Fallback
     },
     imageContainer: {
         height: '45%', // Keep relative height
@@ -200,7 +198,6 @@ const styles = StyleSheet.create({
         width: 20,
         height: 20,
         borderRadius: 10,
-        backgroundColor: COLORS.primary,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 8,

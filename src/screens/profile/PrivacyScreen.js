@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, SCREENS } from "../../services/NavigationContext";
 import { useLanguage } from "../../services/LanguageContext";
 import { useTheme } from "../../services/ThemeContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const { width } = Dimensions.get('window');
 
@@ -10,6 +11,7 @@ const PrivacyScreen = () => {
   const { goBack, navigate } = useNavigation();
   const { t } = useLanguage();
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
 
   const renderSection = (title, content) => (
     <View style={styles.section}>
@@ -20,7 +22,10 @@ const PrivacyScreen = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.header, { borderBottomColor: colors.border }]}>
+      <View style={[styles.header, {
+        borderBottomColor: colors.border,
+        paddingTop: Math.max(insets.top, 16)
+      }]}>
         <TouchableOpacity
           onPress={() => goBack ? goBack() : navigate(SCREENS.PROFILE)}
           style={[styles.backBtn, { backgroundColor: colors.cardBg }]}

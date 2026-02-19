@@ -1,20 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Platform, StatusBar as RNStatusBar, Animated, Dimensions, Easing } from 'react-native';
+import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Animated, Dimensions, Easing, Text, TextInput } from 'react-native';
+
+// Disable font scaling globally to ensure consistent font sizes across Android and iOS
+if (Text.defaultProps == null) Text.defaultProps = {};
+Text.defaultProps.allowFontScaling = false;
+if (TextInput.defaultProps == null) TextInput.defaultProps = {};
+TextInput.defaultProps.allowFontScaling = false;
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationProvider, useNavigation, SCREENS } from './src/services/NavigationContext';
 import { LanguageProvider } from './src/services/LanguageContext';
-import { ThemeProvider } from './src/services/ThemeContext';
-import { COLORS } from './src/utils/theme';
+import { ThemeProvider, useTheme } from './src/services/ThemeContext';
 
 // Screens
 import SplashScreen from './src/screens/splashScreen/SplashScreen';
 import HomeScreen from './src/screens/home/HomeScreen';
-import Explore, { ExploreSectionGrid } from './src/screens/explore/Explore';
+import Explore from './src/screens/explore/Explore';
 import SavedScreen from './src/screens/saved/SavedScreen';
 import ProfileScreen from './src/screens/profile/ProfileScreen';
-import ArticleDetailScreen from './src/screens/articles/ArticleDetailScreen';
 import Register from './src/screens/register/Register';
 import ForgotPassword from './src/screens/register/ForgotPassword';
 import BottomNavigation from './src/components/BottomNavigation';
@@ -67,8 +71,6 @@ const ScreenRenderer = () => {
       startValue = width;
     }
     else if (
-      currentScreen === SCREENS.DETAIL ||
-      currentScreen === SCREENS.EXPLORE_SECTION_GRID ||
       currentScreen === SCREENS.PRIVACY ||
       currentScreen === SCREENS.LANGUAGE ||
       currentScreen === SCREENS.NOTIFICATIONS
@@ -76,8 +78,6 @@ const ScreenRenderer = () => {
       startValue = width;
     }
     else if (
-      prevScreen === SCREENS.DETAIL ||
-      prevScreen === SCREENS.EXPLORE_SECTION_GRID ||
       prevScreen === SCREENS.PRIVACY ||
       prevScreen === SCREENS.LANGUAGE ||
       prevScreen === SCREENS.NOTIFICATIONS
@@ -107,14 +107,10 @@ const ScreenRenderer = () => {
         return <HomeScreen />;
       case SCREENS.EXPLORE:
         return <Explore />;
-      case SCREENS.EXPLORE_SECTION_GRID:
-        return <ExploreSectionGrid />;
       case SCREENS.SAVED:
         return <SavedScreen />;
       case SCREENS.PROFILE:
         return <ProfileScreen />;
-      case SCREENS.DETAIL:
-        return <ArticleDetailScreen />;
       case SCREENS.REGISTER:
         return <Register />;
       case SCREENS.LOGIN:
@@ -152,8 +148,9 @@ const ScreenRenderer = () => {
   );
 };
 
-const MainLayout = () => {
+const MainApp = () => { // Renamed from MainLayout to MainApp
   const { currentScreen, isTabBarVisible } = useNavigation();
+  const { colors, isDark } = useTheme(); // Added useTheme hook
 
   // App.js (inside MainLayout)
   const shouldShowTabs = isTabBarVisible &&
@@ -164,11 +161,11 @@ const MainLayout = () => {
     currentScreen !== SCREENS.FORGOT_PASSWORD;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar style="dark" backgroundColor={COLORS.background} />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <StatusBar style={isDark ? "light" : "dark"} backgroundColor={colors.background} />
       <ScreenRenderer />
       {shouldShowTabs && <BottomNavigation />}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -179,7 +176,7 @@ export default function App() {
         <LanguageProvider>
           <ThemeProvider>
             <NavigationProvider>
-              <MainLayout />
+              <MainApp />
             </NavigationProvider>
           </ThemeProvider>
         </LanguageProvider>
@@ -191,6 +188,5 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
 });

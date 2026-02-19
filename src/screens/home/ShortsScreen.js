@@ -31,416 +31,49 @@ import {
     GestureDetector,
     GestureHandlerRootView
 } from 'react-native-gesture-handler';
-import { useNavigation, SCREENS } from '../../services/NavigationContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '../../services/NavigationContext';
 import { useTheme } from '../../services/ThemeContext';
 import { MockDataService } from '../../data/mockData';
 import { useLanguage } from '../../services/LanguageContext';
-import { COLORS } from '../../utils/theme';
 
 const { width, height: SCREEN_HEIGHT } = Dimensions.get('window');
 // Initial estimate, will be updated by onLayout
 const TOP_BAR_HEIGHT = 50;
-const INITIAL_ITEM_HEIGHT = SCREEN_HEIGHT - (Platform.OS === 'ios' ? 90 : 70) - TOP_BAR_HEIGHT;
+const BANNER_HEIGHT = 64;
+// Recalibrated for taller BottomNavigation (52px base + padding)
+const INITIAL_ITEM_HEIGHT = SCREEN_HEIGHT - (Platform.OS === 'ios' ? 105 : 95) - TOP_BAR_HEIGHT;
 
-const CATEGORIES = [
-    { name: 'Trending', key: 'trending' },
-    { name: 'Heritage', key: 'heritage' },
-    { name: 'Dance', key: 'dance' },
-    { name: 'History', key: 'history' },
-    { name: 'Events', key: 'events' },
-    { name: 'Culture', key: 'culture' },
-    { name: 'Food', key: 'food' },
-    { name: 'Art', key: 'art' },
-    { name: 'News', key: 'news' },
+const MOCK_ADS = [
+    {
+        id: 'ad1',
+        title: 'Experience Heritage Pulse Premium',
+        subtitle: 'Ad-free reading & exclusive cultural deep-dives.',
+        buttonText: 'Upgrade'
+    },
+    {
+        id: 'ad2',
+        title: 'Visit the National Museum',
+        subtitle: 'Explore 5,000 years of history today.',
+        buttonText: 'Book Now'
+    },
+    {
+        id: 'ad3',
+        title: 'Authentic Handcrafted Silks',
+        subtitle: 'Support local artisans from Varanasi.',
+        buttonText: 'Shop Now'
+    },
+    {
+        id: 'ad4',
+        title: 'Cultural Heritage Tour 2026',
+        subtitle: 'Join our curated journey through Rajasthan.',
+        buttonText: 'Join'
+    }
 ];
-
-const SourceWebModal = ({ visible, url, onClose }) => {
-    const translateY = useSharedValue(0);
-    const context = useSharedValue({ y: 0 });
-
-    const gesture = Gesture.Pan()
-        .activeOffsetY([0, 20])
-        .onStart(() => {
-            context.value = { y: translateY.value };
-        })
-        .onUpdate((event) => {
-            if (event.translationY > 0) {
-                translateY.value = event.translationY + context.value.y;
-            }
-        })
-        .onEnd((event) => {
-            if (event.translationY > 150 || event.velocityY > 500) {
-                translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
-                    runOnJS(onClose)();
-                });
-            } else {
-                translateY.value = withSpring(0);
-            }
-        });
-
-    const animatedStyle = useAnimatedStyle(() => {
-        return {
-            transform: [{ translateY: translateY.value }],
-            borderTopLeftRadius: interpolate(translateY.value, [0, 100], [0, 30], Extrapolate.CLAMP),
-            borderTopRightRadius: interpolate(translateY.value, [0, 100], [0, 30], Extrapolate.CLAMP),
-            overflow: 'hidden',
-        };
-    });
-
-    useEffect(() => {
-        if (visible) translateY.value = 0;
-    }, [visible]);
-
-    const handleExternalOpen = () => {
-        if (Platform.OS === 'web') {
-            window.open(url, '_blank');
-        } else {
-            WebBrowser.openBrowserAsync(url);
-        }
-    };
-
-    const modalContent = (
-        <GestureDetector gesture={gesture}>
-            <Animated.View style={[styles.modalContainer, animatedStyle]}>
-                <View style={styles.modalHeader}>
-                    <View style={styles.closeHandle} />
-                    <View style={styles.modalTitleRow}>
-                        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-                            <Ionicons name="close" size={24} color="#333" />
-                        </TouchableOpacity>
-                        <Text style={styles.modalUrl} numberOfLines={1}>{url}</Text>
-                        <TouchableOpacity onPress={handleExternalOpen} style={styles.externalButton}>
-                            <Ionicons name="open-outline" size={22} color={COLORS.primary} />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-                <View style={{ flex: 1, backgroundColor: 'white' }}>
-                    {Platform.OS === 'web' ? (
-                        <View style={{ flex: 1 }}>
-                            <iframe
-                                src={url}
-                                style={{ border: 'none', width: '100%', height: '100%' }}
-                                title="Source"
-                            />
-                            {/* Overlay message for potentially blocked iframes */}
-                            <View style={styles.iframeOverlay}>
-                                <Text style={styles.iframeOverlayText}>If content doesn't load, use the open button above.</Text>
-                            </View>
-                        </View>
-                    ) : (
-                        <WebView
-                            source={{ uri: url }}
-                            startInLoadingState
-                            renderLoading={() => (
-                                <ActivityIndicator
-                                    style={StyleSheet.absoluteFill}
-                                    color={COLORS.primary}
-                                    size="large"
-                                />
-                            )}
-                        />
-                    )}
-                </View>
-            </Animated.View>
-        </GestureDetector>
-    );
-
-    if (Platform.OS === 'web') {
-        if (!visible) return null;
-        return (
-            <View style={styles.webModalWrapper}>
-                <TouchableOpacity activeOpacity={1} style={styles.webModalOverlay} onPress={onClose} />
-                {modalContent}
-            </View>
-        );
-    }
-
-    return (
-        <Modal
-            visible={visible}
-            animationType="slide"
-            presentationStyle="fullScreen"
-            transparent={true}
-            onRequestClose={onClose}
-        >
-            <GestureHandlerRootView style={{ flex: 1 }}>
-                {modalContent}
-            </GestureHandlerRootView>
-        </Modal>
-    );
-};
-
-const ShortItem = ({ item, height, onOpenUrl }) => {
-    const { colors } = useTheme();
-    const [bookmarked, setBookmarked] = useState(MockDataService.isBookmarked(item.id));
-
-    const handleShare = async () => {
-        try {
-            await Share.share({ message: `${item.title}\n\nRead more at: ${item.sourceLink}` });
-        } catch (error) {
-            console.error(error.message);
-        }
-    };
-
-    const handleBookmark = () => {
-        setBookmarked(MockDataService.toggleBookmark(item.id));
-    };
-
-    return (
-        <View style={[styles.card, { backgroundColor: colors.background, height: height }]}>
-            <View style={styles.imageContainer}>
-                <Image source={item.image} style={styles.image} resizeMode="cover" />
-                <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.gradient} />
-                <View style={[styles.badge, { backgroundColor: COLORS.primary }]}>
-                    <Text style={styles.badgeText}>{item.category}</Text>
-                </View>
-                <View style={styles.topInfoBar}>
-                    <View style={styles.publisherContainer}>
-                        <View style={[styles.publisherDot, { backgroundColor: COLORS.primary }]} />
-                        <Text style={styles.publisherText}>{item.publisher}</Text>
-                    </View>
-                    <Text style={styles.timeText}>{item.timestamp}</Text>
-                </View>
-                <View style={styles.floatingActions}>
-                    <TouchableOpacity onPress={handleBookmark} style={styles.floatingButton}>
-                        <Ionicons name={bookmarked ? "bookmark" : "bookmark-outline"} size={22} color={bookmarked ? COLORS.primary : "#333"} />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={handleShare} style={styles.floatingButton}>
-                        <Ionicons name="share-social-outline" size={22} color="#333" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            <View style={styles.content}>
-                <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
-                <Text style={[styles.description, { color: colors.secondaryText }]} numberOfLines={12}>{item.content}</Text>
-                {item.sourceLink && (
-                    <TouchableOpacity onPress={() => onOpenUrl(item.sourceLink)} style={styles.sourceContainer}>
-                        <Text style={styles.sourcePrefix}>Source: </Text>
-                        <Text style={[styles.sourceText, { color: colors.primary }]}>{item.publisher || "Original Article"}</Text>
-                    </TouchableOpacity>
-                )}
-            </View>
-        </View>
-    );
-};
-
-const CategoryList = ({ categoryKey, language, itemHeight, onOpenUrl }) => {
-    const articles = React.useMemo(() => {
-        if (categoryKey === 'trending') return MockDataService.getTrendingArticles(language);
-        return MockDataService.getExploreSection(categoryKey, language);
-    }, [categoryKey, language]);
-
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const onViewableItemsChanged = useRef(({ viewableItems }) => {
-        if (viewableItems.length > 0) setActiveIndex(viewableItems[0].index);
-    }).current;
-
-    const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
-
-    if (articles.length === 0) {
-        return (
-            <View style={[styles.emptyContainer, { width: width, height: itemHeight }]}>
-                <Ionicons name="newspaper-outline" size={64} color="#ccc" />
-                <Text style={styles.emptyText}>No stories in this category yet.</Text>
-            </View>
-        );
-    }
-
-    return (
-        <FlatList
-            data={articles}
-            renderItem={({ item }) => <ShortItem item={item} height={itemHeight} onOpenUrl={onOpenUrl} />}
-            keyExtractor={item => item.id}
-            pagingEnabled={true}
-            key={`list-${categoryKey}-${itemHeight}`}
-            vertical
-            nestedScrollEnabled={true}
-            showsVerticalScrollIndicator={false}
-            snapToInterval={itemHeight}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={viewabilityConfig}
-            getItemLayout={(data, index) => ({
-                length: itemHeight,
-                offset: itemHeight * index,
-                index,
-            })}
-            style={{ flex: 1 }}
-            contentContainerStyle={{ flexGrow: 1 }}
-            scrollEnabled={true}
-        />
-    );
-};
-
-const ShortsScreen = () => {
-    const { language } = useLanguage();
-    const { colors } = useTheme();
-    const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
-    const [browserVisible, setBrowserVisible] = useState(false);
-    const [browserUrl, setBrowserUrl] = useState('');
-    const [itemHeight, setItemHeight] = useState(INITIAL_ITEM_HEIGHT);
-    const horizontalScrollRef = useRef(null);
-    const categoryBarRef = useRef(null);
-
-    // Dynamic height measurement
-    const onLayout = (event) => {
-        const { height: measuredHeight } = event.nativeEvent.layout;
-        if (measuredHeight > 0 && Math.abs(measuredHeight - itemHeight) > 1) {
-            setItemHeight(measuredHeight);
-        }
-    };
-
-    // Content Protection
-    useEffect(() => {
-        if (Platform.OS === 'web') {
-            const handleContextMenu = (e) => e.preventDefault();
-            window.addEventListener('contextmenu', handleContextMenu);
-            return () => window.removeEventListener('contextmenu', handleContextMenu);
-        }
-    }, []);
-
-    const openBrowser = useCallback((url) => {
-        // Fallback for web if iframe might be blocked, or just open modal
-        setBrowserUrl(url);
-        setBrowserVisible(true);
-    }, []);
-
-    const handleCategoryPress = (index) => {
-        if (index < 0 || index >= CATEGORIES.length) return;
-        setActiveCategoryIndex(index);
-        horizontalScrollRef.current?.scrollTo({ x: index * width, animated: true });
-
-        categoryBarRef.current?.scrollToIndex({
-            index,
-            animated: true,
-            viewPosition: 0.5
-        });
-    };
-
-    // Global Keyboard Listener for Web
-    useEffect(() => {
-        if (Platform.OS !== 'web') return;
-
-        const handleKeyDown = (e) => {
-            if (browserVisible) return; // Don't switch categories if browser is open
-
-            if (e.key === 'ArrowRight') {
-                setActiveCategoryIndex(prev => {
-                    const next = Math.min(prev + 1, CATEGORIES.length - 1);
-                    horizontalScrollRef.current?.scrollTo({ x: next * width, animated: true });
-                    categoryBarRef.current?.scrollToIndex({ index: next, animated: true, viewPosition: 0.5 });
-                    return next;
-                });
-            } else if (e.key === 'ArrowLeft') {
-                setActiveCategoryIndex(prev => {
-                    const next = Math.max(prev - 1, 0);
-                    horizontalScrollRef.current?.scrollTo({ x: next * width, animated: true });
-                    categoryBarRef.current?.scrollToIndex({ index: next, animated: true, viewPosition: 0.5 });
-                    return next;
-                });
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [browserVisible]);
-
-    const handleScroll = (event) => {
-        const xOffset = event.nativeEvent.contentOffset.x;
-        const index = Math.round(xOffset / width);
-
-        if (index !== activeCategoryIndex && index >= 0 && index < CATEGORIES.length) {
-            setActiveCategoryIndex(index);
-            categoryBarRef.current?.scrollToIndex({
-                index,
-                animated: true,
-                viewPosition: 0.5
-            });
-        }
-    };
-
-    return (
-        <View style={styles.mainContainer}>
-            <StatusBar barStyle="dark-content" transparent />
-
-            {/* Category Top Bar */}
-            <View style={[styles.categoryBar, { backgroundColor: colors.background }]}>
-                <FlatList
-                    ref={categoryBarRef}
-                    data={CATEGORIES}
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.categoryBarContent}
-                    renderItem={({ item, index }) => (
-                        <TouchableOpacity
-                            onPress={() => handleCategoryPress(index)}
-                            style={[
-                                styles.categoryTab,
-                                activeCategoryIndex === index && { backgroundColor: `${COLORS.primary}15` }
-                            ]}
-                        >
-                            <Text style={[
-                                styles.categoryTabText,
-                                {
-                                    color: activeCategoryIndex === index ? COLORS.primary : '#888',
-                                    fontWeight: activeCategoryIndex === index ? 'bold' : '600'
-                                }
-                            ]}>
-                                {item.name}
-                            </Text>
-                        </TouchableOpacity>
-                    )}
-                    keyExtractor={item => item.key}
-                />
-            </View>
-
-            {/* Main Horizontal Pager */}
-            <View
-                style={{ flex: 1 }}
-                onLayout={onLayout}
-            >
-                <Animated.ScrollView
-                    ref={horizontalScrollRef}
-                    horizontal
-                    pagingEnabled
-                    showsHorizontalScrollIndicator={false}
-                    onScroll={handleScroll}
-                    scrollEventThrottle={16}
-                    nestedScrollEnabled={true}
-                    style={{ flex: 1 }}
-                    keyboardShouldPersistTaps="handled"
-                    scrollEnabled={!browserVisible}
-                >
-                    {CATEGORIES.map((cat, index) => (
-                        <View key={cat.key} style={{ width: width, height: '100%' }}>
-                            <CategoryList
-                                categoryKey={cat.key}
-                                language={language}
-                                itemHeight={itemHeight}
-                                onOpenUrl={openBrowser}
-                            />
-                        </View>
-                    ))}
-                </Animated.ScrollView>
-            </View>
-
-            {browserVisible && (
-                <SourceWebModal
-                    visible={browserVisible}
-                    url={browserUrl}
-                    onClose={() => setBrowserVisible(false)}
-                />
-            )}
-        </View>
-    );
-};
 
 const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
-        backgroundColor: COLORS.background,
         ...Platform.select({
             web: {
                 userSelect: 'none',
@@ -499,10 +132,8 @@ const styles = StyleSheet.create({
     publisherContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-        borderRadius: 15,
+        paddingHorizontal: 8,
+        paddingVertical: 2,
     },
     publisherDot: {
         width: 8,
@@ -513,7 +144,7 @@ const styles = StyleSheet.create({
     publisherText: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: '#333',
+        color: 'white',
     },
     timeText: {
         color: 'white',
@@ -543,7 +174,7 @@ const styles = StyleSheet.create({
         fontSize: 22,
         fontWeight: 'bold',
         lineHeight: 28,
-        marginBottom: 12,
+        marginBottom: 8,
     },
     description: {
         fontSize: 16,
@@ -711,6 +342,532 @@ const styles = StyleSheet.create({
         color: '#888',
         textAlign: 'center',
     },
+    bannerAdContainer: {
+        height: 64,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        borderTopWidth: 1,
+        ...Platform.select({
+            web: {
+                cursor: 'pointer'
+            }
+        })
+    },
+    adBadge: {
+        paddingHorizontal: 6,
+        paddingVertical: 2,
+        borderRadius: 4,
+        marginRight: 12,
+    },
+    adBadgeText: {
+        color: 'white',
+        fontSize: 10,
+        fontWeight: 'bold',
+        letterSpacing: 0.5
+    },
+    adContent: {
+        flex: 1,
+        marginRight: 10
+    },
+    adTitle: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginBottom: 2
+    },
+    adSubtitle: {
+        fontSize: 11,
+        opacity: 0.8
+    },
+    adButton: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 10,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
+    adButtonText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: 'bold',
+    },
 });
+
+const CATEGORIES = [
+    { name: 'Trending', key: 'trending' },
+    { name: 'Heritage', key: 'heritage' },
+    { name: 'Dance', key: 'dance' },
+    { name: 'History', key: 'history' },
+    { name: 'Events', key: 'events' },
+    { name: 'Culture', key: 'culture' },
+    { name: 'Food', key: 'food' },
+    { name: 'Art', key: 'art' },
+    { name: 'News', key: 'news' },
+];
+
+const SourceWebModal = ({ visible, url, onClose }) => {
+    const { colors } = useTheme();
+    const translateY = useSharedValue(0);
+    const context = useSharedValue({ y: 0 });
+
+    const gesture = Gesture.Pan()
+        .activeOffsetY([0, 20])
+        .onStart(() => {
+            context.value = { y: translateY.value };
+        })
+        .onUpdate((event) => {
+            if (event.translationY > 0) {
+                translateY.value = event.translationY + context.value.y;
+            }
+        })
+        .onEnd((event) => {
+            if (event.translationY > 150 || event.velocityY > 500) {
+                translateY.value = withTiming(SCREEN_HEIGHT, { duration: 250 }, () => {
+                    runOnJS(onClose)();
+                });
+            } else {
+                translateY.value = withSpring(0);
+            }
+        });
+
+    const animatedStyle = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: translateY.value }],
+            borderTopLeftRadius: interpolate(translateY.value, [0, 100], [0, 30], Extrapolate.CLAMP),
+            borderTopRightRadius: interpolate(translateY.value, [0, 100], [0, 30], Extrapolate.CLAMP),
+            overflow: 'hidden',
+        };
+    });
+
+    useEffect(() => {
+        if (visible) translateY.value = 0;
+    }, [visible]);
+
+    const handleExternalOpen = () => {
+        if (Platform.OS === 'web') {
+            window.open(url, '_blank');
+        } else {
+            WebBrowser.openBrowserAsync(url);
+        }
+    };
+
+    const modalContent = (
+        <GestureDetector gesture={gesture}>
+            <Animated.View style={[styles.modalContainer, animatedStyle, { backgroundColor: colors.background }]}>
+                <View style={[styles.modalHeader, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+                    <View style={styles.closeHandle} />
+                    <View style={styles.modalTitleRow}>
+                        <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: colors.cardBg }]}>
+                            <Ionicons name="close" size={24} color={colors.text} />
+                        </TouchableOpacity>
+                        <Text style={[styles.modalUrl, { color: colors.secondaryText }]} numberOfLines={1}>{url}</Text>
+                        <TouchableOpacity onPress={handleExternalOpen} style={styles.externalButton}>
+                            <Ionicons name="open-outline" size={22} color={colors.primary} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <View style={{ flex: 1, backgroundColor: colors.background }}>
+                    {Platform.OS === 'web' ? (
+                        <View style={{ flex: 1 }}>
+                            <iframe
+                                src={url}
+                                style={{ border: 'none', width: '100%', height: '100%' }}
+                                title="Source"
+                            />
+                            <View style={styles.iframeOverlay}>
+                                <Text style={styles.iframeOverlayText}>If content doesn't load, use the open button above.</Text>
+                            </View>
+                        </View>
+                    ) : (
+                        <WebView
+                            source={{ uri: url }}
+                            startInLoadingState
+                            renderLoading={() => (
+                                <ActivityIndicator
+                                    style={StyleSheet.absoluteFill}
+                                    color={colors.primary}
+                                    size="large"
+                                />
+                            )}
+                        />
+                    )}
+                </View>
+            </Animated.View>
+        </GestureDetector>
+    );
+
+    if (Platform.OS === 'web') {
+        if (!visible) return null;
+        return (
+            <View style={styles.webModalWrapper}>
+                <TouchableOpacity activeOpacity={1} style={styles.webModalOverlay} onPress={onClose} />
+                {modalContent}
+            </View>
+        );
+    }
+
+    return (
+        <Modal
+            visible={visible}
+            animationType="fade"
+            presentationStyle="overFullScreen"
+            transparent={true}
+            onRequestClose={onClose}
+        >
+            <GestureHandlerRootView style={{ flex: 1 }}>
+                {modalContent}
+            </GestureHandlerRootView>
+        </Modal>
+    );
+};
+
+const BannerAd = ({ ad }) => {
+    const { colors } = useTheme();
+    if (!ad) return null;
+    return (
+        <View style={[styles.bannerAdContainer, { backgroundColor: colors.cardBg, borderTopColor: colors.border }]}>
+            <View style={[styles.adBadge, { backgroundColor: colors.primary }]}>
+                <Text style={styles.adBadgeText}>AD</Text>
+            </View>
+            <View style={styles.adContent}>
+                <Text style={[styles.adTitle, { color: colors.text }]} numberOfLines={1}>{ad.title}</Text>
+                <Text style={[styles.adSubtitle, { color: colors.secondaryText }]} numberOfLines={1}>{ad.subtitle}</Text>
+            </View>
+            <TouchableOpacity style={[styles.adButton, { backgroundColor: colors.primary }]}>
+                <Text style={styles.adButtonText}>{ad.buttonText}</Text>
+            </TouchableOpacity>
+        </View>
+    );
+};
+
+const ShortItem = ({ item, index, height, onOpenUrl }) => {
+    const ad = MOCK_ADS[index % MOCK_ADS.length];
+    const { colors } = useTheme();
+    const [bookmarked, setBookmarked] = useState(MockDataService.isBookmarked(item.id));
+
+    const handleShare = async () => {
+        try {
+            await Share.share({ message: `${item.title}\n\nRead more at: ${item.sourceLink}` });
+        } catch (error) {
+            console.error(error.message);
+        }
+    };
+
+    const handleBookmark = () => {
+        setBookmarked(MockDataService.toggleBookmark(item.id));
+    };
+
+    return (
+        <View style={[
+            styles.card,
+            { backgroundColor: colors.background, height: height },
+            Platform.OS === 'web' && { scrollSnapAlign: 'start' }
+        ]}>
+            <View style={styles.imageContainer}>
+                <Image source={item.image} style={styles.image} resizeMode="cover" />
+                <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.gradient} />
+                <View style={[styles.badge, { backgroundColor: colors.primary }]}>
+                    <Text style={styles.badgeText}>{item.category}</Text>
+                </View>
+                <View style={styles.topInfoBar}>
+                    <View style={styles.publisherContainer}>
+                        <View style={[styles.publisherDot, { backgroundColor: colors.primary }]} />
+                        <Text style={styles.publisherText}>{item.publisher}</Text>
+                    </View>
+                    <Text style={styles.timeText}>{item.timestamp}</Text>
+                </View>
+                <View style={styles.floatingActions}>
+                    <TouchableOpacity onPress={handleBookmark} style={[styles.floatingButton, { backgroundColor: colors.cardBg }]}>
+                        <Ionicons name={bookmarked ? "bookmark" : "bookmark-outline"} size={22} color={bookmarked ? colors.primary : colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleShare} style={[styles.floatingButton, { backgroundColor: colors.cardBg }]}>
+                        <Ionicons name="share-social-outline" size={22} color={colors.text} />
+                    </TouchableOpacity>
+                </View>
+            </View>
+            <View style={styles.content}>
+                <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.description, { color: colors.secondaryText }]} numberOfLines={Platform.OS === 'web' ? 12 : 15}>{item.content}</Text>
+                {item.sourceLink && (
+                    <TouchableOpacity onPress={() => onOpenUrl(item.sourceLink)} style={styles.sourceContainer}>
+                        <Text style={[styles.sourcePrefix, { color: colors.secondaryText }]}>Source: </Text>
+                        <Text style={[styles.sourceText, { color: colors.primary }]}>{item.publisher || "Original Article"}</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
+            <BannerAd ad={ad} />
+        </View>
+    );
+};
+
+const CategoryList = ({ categoryKey, language, itemHeight, onOpenUrl }) => {
+    const { params } = useNavigation();
+    const articles = React.useMemo(() => {
+        if (categoryKey === 'trending') return MockDataService.getTrendingArticles(language);
+        return MockDataService.getExploreSection(categoryKey, language);
+    }, [categoryKey, language]);
+
+    const initialIndex = React.useMemo(() => {
+        if (!articles || !articles.length) return 0;
+        const targetId = params?.articleId;
+        if (!targetId) return 0;
+        const idx = articles.findIndex(a => a.id === targetId);
+        return idx >= 0 ? idx : 0;
+    }, [articles, params?.articleId]);
+
+    const [activeIndex, setActiveIndex] = useState(initialIndex);
+
+    const onViewableItemsChanged = useRef(({ viewableItems }) => {
+        if (viewableItems.length > 0) setActiveIndex(viewableItems[0].index);
+    }).current;
+
+    const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+
+    if (articles.length === 0) {
+        return (
+            <View style={[styles.emptyContainer, { width: width, height: itemHeight }]}>
+                <Ionicons name="newspaper-outline" size={64} color="#ccc" />
+                <Text style={styles.emptyText}>No stories in this category yet.</Text>
+            </View>
+        );
+    }
+
+    return (
+        <FlatList
+            data={articles}
+            renderItem={({ item, index }) => <ShortItem item={item} index={index} height={itemHeight} onOpenUrl={onOpenUrl} />}
+            keyExtractor={item => item.id}
+            pagingEnabled={true}
+            key={`list-${categoryKey}-${itemHeight}`}
+            vertical
+            nestedScrollEnabled={true}
+            showsVerticalScrollIndicator={false}
+            snapToInterval={itemHeight}
+            snapToAlignment="start"
+            decelerationRate="fast"
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+            getItemLayout={(data, index) => ({
+                length: itemHeight,
+                offset: itemHeight * index,
+                index,
+            })}
+            initialScrollIndex={initialIndex}
+            style={[{ flex: 1 }, Platform.OS === 'web' && { scrollSnapType: 'y mandatory', overflowY: 'scroll' }]}
+            contentContainerStyle={{ flexGrow: 1 }}
+            scrollEnabled={true}
+        />
+    );
+};
+
+
+const ShortsScreen = () => {
+    const { params } = useNavigation();
+    const { language } = useLanguage();
+    const { colors } = useTheme();
+    const insets = useSafeAreaInsets();
+    const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
+    const [browserVisible, setBrowserVisible] = useState(false);
+    const [browserUrl, setBrowserUrl] = useState('');
+    const [itemHeight, setItemHeight] = useState(INITIAL_ITEM_HEIGHT);
+    const horizontalScrollRef = useRef(null);
+    const categoryBarRef = useRef(null);
+
+    // Dynamic height measurement
+    const onLayout = (event) => {
+        const { height: measuredHeight } = event.nativeEvent.layout;
+        if (measuredHeight > 0 && Math.abs(measuredHeight - itemHeight) > 1) {
+            setItemHeight(measuredHeight);
+        }
+    };
+
+    // Content Protection
+    useEffect(() => {
+        if (Platform.OS === 'web') {
+            const handleContextMenu = (e) => e.preventDefault();
+            window.addEventListener('contextmenu', handleContextMenu);
+            return () => window.removeEventListener('contextmenu', handleContextMenu);
+        }
+    }, []);
+
+    // Handle initial category/article from params
+    useEffect(() => {
+        let targetCategory = params?.categoryKey;
+
+        // If we have an articleId but no categoryKey, find the category for that article
+        if (params?.articleId && !targetCategory) {
+            const article = MockDataService.getArticleById(params.articleId, language);
+            if (article) {
+                targetCategory = article.category?.toLowerCase();
+            }
+        }
+
+        if (targetCategory) {
+            const index = CATEGORIES.findIndex(cat => cat.key === targetCategory);
+            // Also try matching by name if key fails (backup)
+            const finalIndex = index !== -1 ? index : CATEGORIES.findIndex(cat => cat.name.toLowerCase() === targetCategory);
+
+            if (finalIndex !== -1 && finalIndex !== activeCategoryIndex) {
+                setTimeout(() => {
+                    handleCategoryPress(finalIndex);
+                }, 100);
+            }
+        }
+    }, [params?.categoryKey, params?.articleId]);
+
+    const openBrowser = useCallback((url) => {
+        // Fallback for web if iframe might be blocked, or just open modal
+        setBrowserUrl(url);
+        setBrowserVisible(true);
+    }, []);
+
+    const handleCategoryPress = (index) => {
+        if (index < 0 || index >= CATEGORIES.length) return;
+        setActiveCategoryIndex(index);
+        horizontalScrollRef.current?.scrollTo({ x: index * width, animated: true });
+
+        categoryBarRef.current?.scrollToIndex({
+            index,
+            animated: true,
+            viewPosition: 0.5
+        });
+    };
+
+    // Global Keyboard Listener for Web
+    useEffect(() => {
+        if (Platform.OS !== 'web') return;
+
+        const handleKeyDown = (e) => {
+            if (browserVisible) return; // Don't switch categories if browser is open
+
+            if (e.key === 'ArrowRight') {
+                setActiveCategoryIndex(prev => {
+                    const next = Math.min(prev + 1, CATEGORIES.length - 1);
+                    horizontalScrollRef.current?.scrollTo({ x: next * width, animated: true });
+                    categoryBarRef.current?.scrollToIndex({ index: next, animated: true, viewPosition: 0.5 });
+                    return next;
+                });
+            } else if (e.key === 'ArrowLeft') {
+                setActiveCategoryIndex(prev => {
+                    const next = Math.max(prev - 1, 0);
+                    horizontalScrollRef.current?.scrollTo({ x: next * width, animated: true });
+                    categoryBarRef.current?.scrollToIndex({ index: next, animated: true, viewPosition: 0.5 });
+                    return next;
+                });
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [browserVisible]);
+
+    const handleScroll = (event) => {
+        const xOffset = event.nativeEvent.contentOffset.x;
+        const index = Math.round(xOffset / width);
+
+        if (index !== activeCategoryIndex && index >= 0 && index < CATEGORIES.length) {
+            setActiveCategoryIndex(index);
+            categoryBarRef.current?.scrollToIndex({
+                index,
+                animated: true,
+                viewPosition: 0.5
+            });
+        }
+    };
+
+    return (
+        <View style={[styles.mainContainer, { backgroundColor: colors.background }]}>
+            <StatusBar barStyle="dark-content" translucent backgroundColor="transparent" />
+
+            {/* Category Top Bar */}
+            <View style={[
+                styles.categoryBar,
+                {
+                    backgroundColor: colors.background,
+                    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top,
+                    height: TOP_BAR_HEIGHT + (Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : insets.top)
+                }
+            ]}>
+                <FlatList
+                    ref={categoryBarRef}
+                    data={CATEGORIES}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.categoryBarContent}
+                    renderItem={({ item, index }) => (
+                        <TouchableOpacity
+                            key={item.key}
+                            onPress={() => handleCategoryPress(index)}
+                            style={[
+                                styles.categoryTab,
+                                activeCategoryIndex === index && { backgroundColor: `${colors.primary}15` },
+                            ]}
+                        >
+                            <Text style={[
+                                styles.categoryTabText,
+                                {
+                                    color: activeCategoryIndex === index ? colors.primary : '#888',
+                                }
+                            ]}>
+                                {item.name}
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                    keyExtractor={item => item.key}
+                />
+            </View>
+
+
+            {/* Main Horizontal Pager */}
+            <View
+                style={{ flex: 1 }}
+                onLayout={onLayout}
+            >
+                <Animated.ScrollView
+                    ref={horizontalScrollRef}
+                    horizontal
+                    pagingEnabled
+                    showsHorizontalScrollIndicator={false}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    nestedScrollEnabled={true}
+                    style={[{ flex: 1 }, Platform.OS === 'web' && { scrollSnapType: 'x mandatory', overflowX: 'scroll' }]}
+                    keyboardShouldPersistTaps="handled"
+                    scrollEnabled={!browserVisible}
+                >
+                    {CATEGORIES.map((cat, index) => (
+                        <View
+                            key={cat.key}
+                            style={[
+                                { width: width, height: '100%' },
+                                Platform.OS === 'web' && { scrollSnapAlign: 'start' }
+                            ]}
+                        >
+                            <CategoryList
+                                categoryKey={cat.key}
+                                language={language}
+                                itemHeight={itemHeight}
+                                onOpenUrl={openBrowser}
+                            />
+                        </View>
+                    ))}
+                </Animated.ScrollView>
+            </View>
+            {/* Header / Category Overlay (Optional, but removed to match 'Saved' immersion) */}
+
+            {browserVisible && (
+                <SourceWebModal
+                    visible={browserVisible}
+                    url={browserUrl}
+                    onClose={() => setBrowserVisible(false)}
+                />
+            )}
+        </View>
+    );
+};
+
 
 export default ShortsScreen;

@@ -15,7 +15,7 @@ export const INITIAL_CHAT_MESSAGES = [
 ];
 
 export const EXPLORE_CATEGORIES = [
-    { name: 'Heritage', key: 'heritage', icon: '🏛️', image: 'https://image.slidesharecdn.com/heritage-180505070314/75/Heritage-1-2048.jpg' },
+    { name: 'Heritage', key: 'heritage', icon: '🏛️', image: 'https://pleachindia.org/wp-content/uploads/2026/02/heritage.avif' },
     { name: 'Dance', key: 'dance', icon: '💃', image: 'https://www.drishtiias.com/images/uploads/1576219602_images.jpg' },
     { name: 'History', key: 'history', icon: '📜', image: 'https://images.unsplash.com/photo-1505664194779-8beaceb93744?q=80&w=400&auto=format&fit=crop' },
     { name: 'Events', key: 'events', icon: '🎭', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLrU2L-pXYQzJJU9p2VdWbxpBqGSVRIcFh7A&s' },

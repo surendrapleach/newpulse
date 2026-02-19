@@ -22,7 +22,7 @@ import Animated, {
     Extrapolate,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { COLORS } from '../utils/theme';
+import { useTheme } from '../services/ThemeContext';
 import { hp, wp, rf } from '../utils/responsive';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -39,6 +39,7 @@ const DUMMY_COMMENTS = [
 ];
 
 const CommentsSheet = ({ visible, onClose }) => {
+    const { colors } = useTheme();
     const [comments, setComments] = useState(DUMMY_COMMENTS);
     const [newComment, setNewComment] = useState('');
     const [showToast, setShowToast] = useState(false);
@@ -53,7 +54,7 @@ const CommentsSheet = ({ visible, onClose }) => {
             damping: 35,
             stiffness: 280,
         });
-    }, []);
+    }, [colors]);
 
     useEffect(() => {
         if (visible) {
@@ -146,7 +147,7 @@ const CommentsSheet = ({ visible, onClose }) => {
                 <Text style={styles.commentText}>{item.text}</Text>
             </View>
             <View style={styles.likeContainer}>
-                <Ionicons name="heart-outline" size={14} color={COLORS.secondaryText} />
+                <Ionicons name="heart-outline" size={14} color={colors.secondaryText} />
                 <Text style={styles.likeCount}>{item.likes}</Text>
             </View>
         </View>
@@ -167,7 +168,7 @@ const CommentsSheet = ({ visible, onClose }) => {
             </Animated.View>
 
             <GestureDetector gesture={gesture}>
-                <Animated.View style={[styles.sheet, sheetStyle]}>
+                <Animated.View style={[styles.sheet, sheetStyle, { backgroundColor: colors.cardBg }]}>
 
                     <View style={styles.handleContainer}>
                         <View style={styles.handle} />
@@ -189,15 +190,15 @@ const CommentsSheet = ({ visible, onClose }) => {
                         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
                     >
-                        <View style={styles.inputContainer}>
+                        <View style={[styles.inputContainer, { borderTopColor: colors.border, backgroundColor: colors.cardBg }]}>
                             <Image
                                 source={{ uri: 'https://i.pravatar.cc/150?img=60' }}
                                 style={styles.myAvatar}
                             />
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { backgroundColor: colors.background, color: colors.text }]}
                                 placeholder="Add a comment..."
-                                placeholderTextColor={COLORS.secondaryText}
+                                placeholderTextColor={colors.secondaryText}
                                 value={newComment}
                                 onChangeText={setNewComment}
                             />
@@ -205,7 +206,7 @@ const CommentsSheet = ({ visible, onClose }) => {
                                 <Text
                                     style={[
                                         styles.postBtn,
-                                        { opacity: newComment.trim() ? 1 : 0.5 },
+                                        { color: colors.primary, opacity: newComment.trim() ? 1 : 0.5 },
                                     ]}
                                 >
                                     Post
@@ -241,7 +242,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)',
     },
     sheet: {
-        backgroundColor: COLORS.cardBg,
         width: '100%',
         height: SCREEN_HEIGHT,
         position: 'absolute',
@@ -267,7 +267,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: rf(16),
         fontWeight: '700',
-        color: COLORS.text,
     },
     listContent: {
         paddingBottom: hp(15),
@@ -288,15 +287,12 @@ const styles = StyleSheet.create({
     username: {
         fontSize: rf(13),
         fontWeight: '600',
-        color: COLORS.text,
     },
     time: {
         fontSize: rf(12),
-        color: COLORS.secondaryText,
     },
     commentText: {
         fontSize: rf(14),
-        color: COLORS.text,
         marginTop: 3,
     },
     likeContainer: {
@@ -306,7 +302,6 @@ const styles = StyleSheet.create({
     },
     likeCount: {
         fontSize: rf(10),
-        color: COLORS.secondaryText,
         marginTop: 2,
     },
     inputContainer: {
@@ -314,8 +309,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: hp(1.2),
         borderTopWidth: 1,
-        borderTopColor: COLORS.border,
-        backgroundColor: COLORS.cardBg,
     },
     myAvatar: {
         width: wp(9),
@@ -327,13 +320,10 @@ const styles = StyleSheet.create({
         flex: 1,
         height: hp(5),
         borderRadius: 25,
-        backgroundColor: COLORS.background,
         paddingHorizontal: wp(4),
         marginRight: wp(2),
-        color: COLORS.text,
     },
     postBtn: {
-        color: COLORS.primary,
         fontWeight: '600',
         fontSize: rf(14),
     },
