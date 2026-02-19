@@ -9,12 +9,13 @@ const CARD_GAP = 16;
 const SNAP_INTERVAL = CARD_WIDTH + CARD_GAP;
 
 const styles = StyleSheet.create({
-    sectionHead: { marginTop: 18 },
+    sectionHead: { marginTop: 18, paddingHorizontal: 16 },
     sectionTitle: { fontSize: 20, lineHeight: 28, fontWeight: "700" },
     sectionSub: { marginTop: 4, fontSize: 14 },
-    cardsRow: { paddingTop: 14, paddingBottom: 8, paddingRight: 8 },
+    cardsRow: { paddingTop: 14, paddingBottom: 8, paddingLeft: 16, paddingRight: 16 },
     seeAllBtn: {
         marginTop: 10,
+        marginHorizontal: 16,
         height: 44,
         borderRadius: 14,
         borderWidth: 1,

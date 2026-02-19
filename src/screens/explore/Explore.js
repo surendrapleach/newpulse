@@ -19,29 +19,28 @@ import { MockDataService } from "../../data/mockData";
 import { truncateText } from "../../utils/textUtils";
 import Header from "../../components/Header";
 import ExploreSection from "./ExploreSection";
+import DailyBriefingCard from "../../components/explore/DailyBriefingCard";
 
 const { width, height } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
     safe: { flex: 1 },
     screen: { flex: 1 },
-    content: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 24 },
-    sectionKicker: { marginTop: 18, fontSize: 12, letterSpacing: 0.8, fontWeight: "600" },
-    categoryRow: { paddingTop: 14, paddingBottom: 8, gap: 22, paddingRight: 8 },
-    categoryItem: { width: 96, alignItems: "center" },
-    categoryImgWrap: {
-        width: 86,
-        height: 86,
-        borderRadius: 43,
-        alignItems: "center",
-        justifyContent: "center",
-        shadowOpacity: Platform.OS === "ios" ? 0.08 : 0,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 6 },
-        elevation: 2,
+    content: { paddingHorizontal: 0, paddingTop: 8, paddingBottom: 24 },
+    sectionKicker: { marginLeft: 16, marginTop: 18, fontSize: 12, letterSpacing: 0.8, fontWeight: "600", marginBottom: 8, textTransform: 'uppercase' },
+    categoryRow: { paddingLeft: 16, paddingBottom: 16, gap: 12, paddingRight: 16 },
+    categoryPill: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        borderRadius: 24,
+        borderWidth: 1,
     },
-    categoryImg: { width: 78, height: 78, borderRadius: 39 },
-    categoryLabel: { marginTop: 10, fontSize: 12, fontWeight: "500" },
+    categoryLabelPill: {
+        fontSize: 14,
+        letterSpacing: 0.3,
+    },
 });
 
 
@@ -112,32 +111,43 @@ const Explore = () => {
                 )}
                 scrollEventThrottle={16}
             >
-                {/* Browse by category */}
-                <Text style={[styles.sectionKicker, { color: colors.secondaryText }]}>{t("explore_browse_by_category")}</Text>
+
+                {/* AI Feature: Daily Briefing Audio */}
+                <DailyBriefingCard onPress={() => console.log('Playing Briefing')} />
+
 
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.categoryRow}
                 >
-                    {categories.map((c) => (
-                        <Pressable key={c.id} style={styles.categoryItem} onPress={() => onOpenCategory(c.key)}>
-                            <View
+                    {categories.map((c) => {
+                        const isHeritage = c.key === 'heritage'; // Highlight first one like image
+
+                        return (
+                            <Pressable
+                                key={c.id}
+                                onPress={() => onOpenCategory(c.key)}
                                 style={[
-                                    styles.categoryImgWrap,
+                                    styles.categoryPill,
                                     {
-                                        backgroundColor: colors.cardBg,
-                                        shadowColor: colors.text,
-                                        borderColor: isDarkMode ? colors.primary : 'transparent',
-                                        borderWidth: isDarkMode ? 1 : 0
+                                        backgroundColor: isHeritage ? '#ea580c' : (isDarkMode ? '#334155' : '#f1f5f9'),
+                                        borderColor: isHeritage ? '#ea580c' : 'transparent',
                                     }
                                 ]}
                             >
-                                <Image source={c.icon} style={styles.categoryImg} resizeMode="cover" />
-                            </View>
-                            <Text style={[styles.categoryLabel, { color: colors.text }]}>{c.label}</Text>
-                        </Pressable>
-                    ))}
+                                <Text style={[
+                                    styles.categoryLabelPill,
+                                    {
+                                        color: isHeritage ? '#fff' : (isDarkMode ? '#e2e8f0' : '#334155'),
+                                        fontWeight: isHeritage ? '600' : '500'
+                                    }
+                                ]}>
+                                    {c.label}
+                                </Text>
+                            </Pressable>
+                        );
+                    })}
                 </ScrollView>
 
                 {/* Modular Sections using Generic Component */}

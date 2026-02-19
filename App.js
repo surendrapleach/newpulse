@@ -2,16 +2,28 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Platform, StatusBar as RNStatusBar, Animated, Dimensions, Easing, Text, TextInput } from 'react-native';
 
 // Disable font scaling globally to ensure consistent font sizes across Android and iOS
+// And set default font family
 if (Text.defaultProps == null) Text.defaultProps = {};
 Text.defaultProps.allowFontScaling = false;
+Text.defaultProps.style = { fontFamily: 'Inter_400Regular' };
+
 if (TextInput.defaultProps == null) TextInput.defaultProps = {};
 TextInput.defaultProps.allowFontScaling = false;
+TextInput.defaultProps.style = { fontFamily: 'Inter_400Regular' };
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NavigationProvider, useNavigation, SCREENS } from './src/services/NavigationContext';
 import { LanguageProvider } from './src/services/LanguageContext';
 import { ThemeProvider, useTheme } from './src/services/ThemeContext';
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold
+} from '@expo-google-fonts/inter';
 
 // Screens
 import SplashScreen from './src/screens/splashScreen/SplashScreen';
@@ -170,6 +182,18 @@ const MainApp = () => { // Renamed from MainLayout to MainApp
 };
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+    Inter_800ExtraBold,
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>

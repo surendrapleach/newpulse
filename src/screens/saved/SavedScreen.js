@@ -532,8 +532,8 @@ const styles = StyleSheet.create({
         marginBottom: 8,
     },
     description: {
-        fontSize: 16,
-        lineHeight: 24,
+        fontSize: 14,
+        lineHeight: 22,
         opacity: 0.9,
     },
     sourceContainer: {

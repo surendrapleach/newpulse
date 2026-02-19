@@ -48,7 +48,7 @@ const MOCK_ADS = [
     {
         id: 'ad1',
         title: 'Experience Heritage Pulse Premium',
-        subtitle: 'Ad-free reading & exclusive cultural deep-dives.',
+        subtitle: 'Ad-free reading & exclusive00 cultural deep-dives.',
         buttonText: 'Upgrade'
     },
     {
@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     },
     imageContainer: {
         width: '100%',
-        height: '45%',
+        height: '40%',
         position: 'relative',
     },
     image: {
@@ -119,53 +119,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         textTransform: 'uppercase',
     },
-    topInfoBar: {
-        position: 'absolute',
-        top: 20,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 15,
-        alignItems: 'center',
-    },
-    publisherContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 2,
-    },
-    publisherDot: {
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        marginRight: 6,
-    },
-    publisherText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: 'white',
-    },
-    timeText: {
-        color: 'white',
-        fontSize: 12,
-        fontWeight: '600',
-        ...Platform.select({
-            ios: {
-                textShadowColor: 'rgba(0,0,0,0.5)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 3,
-            },
-            android: {
-                textShadowColor: 'rgba(0,0,0,0.5)',
-                textShadowOffset: { width: 0, height: 1 },
-                textShadowRadius: 3,
-            },
-            web: {
-                textShadow: '0 1px 3px rgba(0,0,0,0.5)',
-            }
-        }),
-    },
     content: {
         padding: 20,
         flex: 1,
@@ -176,9 +129,14 @@ const styles = StyleSheet.create({
         lineHeight: 28,
         marginBottom: 8,
     },
+    timeLabel: {
+        fontSize: 12,
+        marginBottom: 10,
+        fontWeight: '500',
+    },
     description: {
-        fontSize: 16,
-        lineHeight: 24,
+        fontSize: 14,
+        lineHeight: 22,
         opacity: 0.9,
     },
     sourceContainer: {
@@ -572,13 +530,6 @@ const ShortItem = ({ item, index, height, onOpenUrl }) => {
                 <View style={[styles.badge, { backgroundColor: colors.primary }]}>
                     <Text style={styles.badgeText}>{item.category}</Text>
                 </View>
-                <View style={styles.topInfoBar}>
-                    <View style={styles.publisherContainer}>
-                        <View style={[styles.publisherDot, { backgroundColor: colors.primary }]} />
-                        <Text style={styles.publisherText}>{item.publisher}</Text>
-                    </View>
-                    <Text style={styles.timeText}>{item.timestamp}</Text>
-                </View>
                 <View style={styles.floatingActions}>
                     <TouchableOpacity onPress={handleBookmark} style={[styles.floatingButton, { backgroundColor: colors.cardBg }]}>
                         <Ionicons name={bookmarked ? "bookmark" : "bookmark-outline"} size={22} color={bookmarked ? colors.primary : colors.text} />
@@ -590,6 +541,7 @@ const ShortItem = ({ item, index, height, onOpenUrl }) => {
             </View>
             <View style={styles.content}>
                 <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+                <Text style={[styles.timeLabel, { color: colors.secondaryText }]}>{item.timestamp}</Text>
                 <Text style={[styles.description, { color: colors.secondaryText }]} numberOfLines={Platform.OS === 'web' ? 12 : 15}>{item.content}</Text>
                 {item.sourceLink && (
                     <TouchableOpacity onPress={() => onOpenUrl(item.sourceLink)} style={styles.sourceContainer}>

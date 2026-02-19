@@ -88,7 +88,7 @@ const Header = ({ scrollY }) => {
             styles.container,
             {
                 backgroundColor: colors.background,
-                borderBottomColor: colors.border,
+                backgroundColor: colors.background,
                 paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : Math.max(insets.top, 8)
             }
         ]}>
@@ -157,7 +157,6 @@ const styles = StyleSheet.create({
     container: {
         paddingHorizontal: 16,
         paddingBottom: 16,
-        borderBottomWidth: 1,
     },
     headerContainer: {
         flexDirection: 'row',

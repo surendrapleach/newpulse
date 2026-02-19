@@ -24,7 +24,7 @@ export const STRINGS = {
     explore_search_placeholder: "Search for Heritage",
     explore_browse_by_category: "BROWSE BY CATEGORY",
     explore_see_all: "See All",
-    explore_top_news_title: "Top Heritage News searched",
+    explore_top_news_title: "Top Heritage News",
     explore_top_news_subtitle: "Popular Heritage News",
     explore_trending_title: "Trending Cultural Events",
     explore_trending_subtitle: "Don't miss these happening now",
