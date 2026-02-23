@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, SCREENS } from '../../services/NavigationContext';
+import PersonalizationService from '../../services/PersonalizationService';
 import { COLORS } from '../../utils/theme';
 
 const { width } = Dimensions.get('window');
@@ -34,8 +35,13 @@ const SplashScreen = () => {
         textTranslateY.value = withDelay(800, withTiming(0, { duration: 800 }));
 
         // Navigate after sequence
-        const timeout = setTimeout(() => {
-            navigate(SCREENS.HOME);
+        const timeout = setTimeout(async () => {
+            const hasInterests = await PersonalizationService.hasInterests();
+            if (hasInterests) {
+                navigate(SCREENS.HOME);
+            } else {
+                navigate(SCREENS.INTEREST_SELECTION);
+            }
         }, 3000);
 
         return () => clearTimeout(timeout);

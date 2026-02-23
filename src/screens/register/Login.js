@@ -7,6 +7,7 @@ import { useNavigation, SCREENS } from "../../services/NavigationContext";
 import AuthLoading from "../../components/loading/AuthLoading";
 import FloatingLabelInput from "../../components/inputs/FloatingLabelInput";
 import CustomAlert from "../../components/CustomAlert";
+import PersonalizationService from "../../services/PersonalizationService";
 
 const Login = () => {
     const { navigate } = useNavigation();
@@ -43,7 +44,16 @@ const Login = () => {
         console.log("Login with:", { email, password });
         setIsLoading(true);
         // Simulate auth delay
-        setTimeout(() => {
+        setTimeout(async () => {
+            // Simulate fetching cloud data from backend
+            const mockCloudData = {
+                interests: ['heritage', 'art'],
+                activity: { 'heritage': 10, 'dance': 5 }
+            };
+
+            // Perform merge of local guest data with cloud data
+            await PersonalizationService.mergeAndSync(mockCloudData);
+
             setIsLoading(false);
             navigate(SCREENS.HOME);
         }, 1500);

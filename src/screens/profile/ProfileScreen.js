@@ -16,6 +16,7 @@ import { useLanguage } from "../../services/LanguageContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Loading from "../../components/loading/Loading";
 import Toast from "../../components/Toast";
+import PersonalizationService from "../../services/PersonalizationService";
 
 const { width } = Dimensions.get('window');
 
@@ -125,6 +126,26 @@ const ProfileScreen = () => {
     }, 2500);
   };
 
+  const handleClearInterests = () => {
+    Alert.alert(
+      "Clear Interests",
+      "Are you sure you want to reset your interests and activity data? This will restart your personalization journey.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Clear Everything",
+          style: "destructive",
+          onPress: async () => {
+            await PersonalizationService.setInterests([]);
+            await PersonalizationService.resetSessionSync();
+            // Optionally clear activity too
+            showToast("Interests cleared. Restart recommended.");
+          }
+        }
+      ]
+    );
+  };
+
   if (isLoading) {
     return <Loading />;
   }
@@ -177,6 +198,15 @@ const ProfileScreen = () => {
 
           {/* Settings Sections */}
           <View style={styles.settingsArea}>
+            <SettingGroup title="Library">
+              <SettingItem
+                icon="bookmark-outline"
+                label={t("profile_bookmarks")}
+                isLast
+                onPress={() => navigate(SCREENS.SAVED)}
+              />
+            </SettingGroup>
+
             <SettingGroup title={t("profile_settings")}>
               <SettingItem icon="notifications-outline" label={t("profile_notifications")} hasSwitch value={notificationsEnabled} onValueChange={handleNotificationToggle} />
               <SettingItem icon="newspaper-outline" label={t("profile_auto_scroll")} hasSwitch value={autoScrollEnabled} onValueChange={handleAutoScrollToggle} isLast onPress={() => navigate(SCREENS.AUTO_SCROLLING)} />
@@ -185,6 +215,15 @@ const ProfileScreen = () => {
             <SettingGroup title="Preferences">
               <SettingItem icon="language-outline" label={t("profile_language")} onPress={() => navigate(SCREENS.LANGUAGE)} />
               <SettingItem icon={isDarkMode ? "sunny-outline" : "moon-outline"} label={isDarkMode ? "Light Mode" : "Dark Mode"} hasSwitch value={isDarkMode} onValueChange={handleThemeToggle} isLast />
+            </SettingGroup>
+
+            <SettingGroup title="Personalization">
+              <SettingItem
+                icon="refresh-outline"
+                label="Reset My Feed"
+                onPress={handleClearInterests}
+                isLast
+              />
             </SettingGroup>
 
             <SettingGroup title="Security">

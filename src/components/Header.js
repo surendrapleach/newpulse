@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const Header = ({ scrollY }) => {
     const { navigate } = useNavigation();
     const { t } = useLanguage();
-    const { colors } = useTheme();
+    const { colors, isDarkMode, toggleTheme } = useTheme();
     const insets = useSafeAreaInsets();
     const [placeholder, setPlaceholder] = useState('');
     const [index, setIndex] = useState(0);
@@ -110,14 +110,28 @@ const Header = ({ scrollY }) => {
                     <Text style={[styles.title, { color: colors.primary }]}>{t("header_title")}</Text>
                     <Text style={[styles.subtitle, { color: colors.secondaryText }]}>{t("header_subtitle")}</Text>
                 </View>
-                <TouchableOpacity
-                    activeOpacity={0.7}
-                    style={[styles.notificationButton, { backgroundColor: colors.cardBg, shadowColor: colors.text }]}
-                    onPress={() => navigate(SCREENS.NOTIFICATIONS)}
-                >
-                    <Ionicons name="notifications-outline" size={26} color={colors.text} />
-                    <View style={[styles.notificationDot, { borderColor: colors.cardBg }]} />
-                </TouchableOpacity>
+                <View style={styles.rightActions}>
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={[styles.actionButton, { backgroundColor: colors.cardBg }]}
+                        onPress={toggleTheme}
+                    >
+                        <Ionicons
+                            name={isDarkMode ? "sunny-outline" : "moon-outline"}
+                            size={24}
+                            color={colors.text}
+                        />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        style={[styles.notificationButton, { backgroundColor: colors.cardBg, shadowColor: colors.text }]}
+                        onPress={() => navigate(SCREENS.NOTIFICATIONS)}
+                    >
+                        <Ionicons name="notifications-outline" size={26} color={colors.text} />
+                        <View style={[styles.notificationDot, { borderColor: colors.cardBg }]} />
+                    </TouchableOpacity>
+                </View>
             </Animated.View>
 
             {/* Search Bar with Typing Animation */}
@@ -175,6 +189,18 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     notificationButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    rightActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+    },
+    actionButton: {
         width: 44,
         height: 44,
         borderRadius: 12,

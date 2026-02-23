@@ -11,7 +11,7 @@ const NavigationContext = createContext();
 export const SCREENS = {
     SPLASH: 'SPLASH',
     HOME: 'HOME',
-    EXPLORE: 'EXPLORE',
+    SEARCH: 'SEARCH',
     EXPLORE_SECTION_LIST: 'EXPLORE_SECTION_LIST',
     EXPLORE_SECTION_GRID: 'EXPLORE_SECTION_GRID',
     SAVED: 'SAVED',
@@ -26,6 +26,9 @@ export const SCREENS = {
     CHANGE_PASSWORD: 'CHANGE_PASSWORD',
     EDIT_PROFILE: 'EDIT_PROFILE',
     AUTO_SCROLLING: 'AUTO_SCROLLING',
+    INTEREST_SELECTION: 'INTEREST_SELECTION',
+    AI: 'AI',
+    SEARCH_RESULTS: 'SEARCH_RESULTS',
 };
 
 export const NavigationProvider = ({ children }) => {
@@ -51,7 +54,7 @@ export const NavigationProvider = ({ children }) => {
         }
         // Fallbacks if no previous screen is tracked
         if (currentScreen === SCREENS.EXPLORE_SECTION_LIST || currentScreen === SCREENS.EXPLORE_SECTION_GRID) {
-            setCurrentScreen(SCREENS.EXPLORE);
+            setCurrentScreen(SCREENS.SEARCH);
             setIsTabBarVisible(true);
         }
     };

@@ -36,6 +36,7 @@ import { useNavigation } from '../../services/NavigationContext';
 import { useTheme } from '../../services/ThemeContext';
 import { MockDataService } from '../../data/mockData';
 import { useLanguage } from '../../services/LanguageContext';
+import PersonalizationService from '../../services/PersonalizationService';
 
 const { width, height: SCREEN_HEIGHT } = Dimensions.get('window');
 // Initial estimate, will be updated by onLayout
@@ -46,22 +47,32 @@ const INITIAL_ITEM_HEIGHT = SCREEN_HEIGHT - (Platform.OS === 'ios' ? 105 : 95) -
 
 const MOCK_ADS = [
     {
+        id: 'ad_tales',
+        title: 'Tales Below the Heels',
+        subtitle: 'Experience the magic of forgotten stories.',
+        buttonText: 'Book Now',
+        url: 'https://pleachindia.org/tales-below-the-heels-2/'
+    },
+    {
         id: 'ad1',
-        title: 'Experience Heritage Pulse Premium',
-        subtitle: 'Ad-free reading & exclusive00 cultural deep-dives.',
-        buttonText: 'Upgrade'
+        title: 'Experience Heritej Pulse Premium',
+        subtitle: 'Ad-free reading & exclusive cultural deep-dives.',
+        buttonText: 'Upgrade',
+        url: 'https://pleachindia.org/'
     },
     {
         id: 'ad2',
         title: 'Visit the National Museum',
         subtitle: 'Explore 5,000 years of history today.',
-        buttonText: 'Book Now'
+        buttonText: 'Book Now',
+        url: 'https://www.nationalmuseumindia.gov.in/'
     },
     {
         id: 'ad3',
         title: 'Authentic Handcrafted Silks',
         subtitle: 'Support local artisans from Varanasi.',
-        buttonText: 'Shop Now'
+        buttonText: 'Shop Now',
+        url: 'https://pleachindia.org/'
     },
     {
         id: 'ad4',
@@ -366,7 +377,7 @@ const CATEGORIES = [
     { name: 'News', key: 'news' },
 ];
 
-const SourceWebModal = ({ visible, url, onClose }) => {
+export const SourceWebModal = ({ visible, url, onClose }) => {
     const { colors } = useTheme();
     const translateY = useSharedValue(0);
     const context = useSharedValue({ y: 0 });
@@ -482,11 +493,22 @@ const SourceWebModal = ({ visible, url, onClose }) => {
     );
 };
 
-const BannerAd = ({ ad }) => {
+const BannerAd = ({ ad, onOpenUrl }) => {
     const { colors } = useTheme();
     if (!ad) return null;
+
+    const handlePress = () => {
+        if (ad.url && onOpenUrl) {
+            onOpenUrl(ad.url);
+        }
+    };
+
     return (
-        <View style={[styles.bannerAdContainer, { backgroundColor: colors.cardBg, borderTopColor: colors.border }]}>
+        <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handlePress}
+            style={[styles.bannerAdContainer, { backgroundColor: colors.cardBg, borderTopColor: colors.border }]}
+        >
             <View style={[styles.adBadge, { backgroundColor: colors.primary }]}>
                 <Text style={styles.adBadgeText}>AD</Text>
             </View>
@@ -494,14 +516,14 @@ const BannerAd = ({ ad }) => {
                 <Text style={[styles.adTitle, { color: colors.text }]} numberOfLines={1}>{ad.title}</Text>
                 <Text style={[styles.adSubtitle, { color: colors.secondaryText }]} numberOfLines={1}>{ad.subtitle}</Text>
             </View>
-            <TouchableOpacity style={[styles.adButton, { backgroundColor: colors.primary }]}>
+            <TouchableOpacity style={[styles.adButton, { backgroundColor: colors.primary }]} onPress={handlePress}>
                 <Text style={styles.adButtonText}>{ad.buttonText}</Text>
             </TouchableOpacity>
-        </View>
+        </TouchableOpacity>
     );
 };
 
-const ShortItem = ({ item, index, height, onOpenUrl }) => {
+export const ShortItem = ({ item, index, height, onOpenUrl }) => {
     const ad = MOCK_ADS[index % MOCK_ADS.length];
     const { colors } = useTheme();
     const [bookmarked, setBookmarked] = useState(MockDataService.isBookmarked(item.id));
@@ -515,7 +537,12 @@ const ShortItem = ({ item, index, height, onOpenUrl }) => {
     };
 
     const handleBookmark = () => {
-        setBookmarked(MockDataService.toggleBookmark(item.id));
+        const isNowBookmarked = MockDataService.toggleBookmark(item.id);
+        setBookmarked(isNowBookmarked);
+
+        if (isNowBookmarked && item.category) {
+            PersonalizationService.trackActivity(item.category.toLowerCase(), 'BOOKMARK');
+        }
     };
 
     return (
@@ -550,17 +577,49 @@ const ShortItem = ({ item, index, height, onOpenUrl }) => {
                     </TouchableOpacity>
                 )}
             </View>
-            <BannerAd ad={ad} />
+            <BannerAd ad={ad} onOpenUrl={onOpenUrl} />
         </View>
     );
 };
 
-const CategoryList = ({ categoryKey, language, itemHeight, onOpenUrl }) => {
+const CategoryList = ({ categoryKey, language, itemHeight, searchQuery, onOpenUrl }) => {
     const { params } = useNavigation();
-    const articles = React.useMemo(() => {
-        if (categoryKey === 'trending') return MockDataService.getTrendingArticles(language);
-        return MockDataService.getExploreSection(categoryKey, language);
-    }, [categoryKey, language]);
+    const { colors } = useTheme();
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadArticles = async () => {
+            setLoading(true);
+            try {
+                if (searchQuery) {
+                    // Fetch search results if query is present
+                    const data = MockDataService.searchArticles(searchQuery);
+                    // Sort by time-wise (mock: latest first if they have isLatest)
+                    const sortedData = data.sort((a, b) => {
+                        if (a.isLatest && !b.isLatest) return -1;
+                        if (!a.isLatest && b.isLatest) return 1;
+                        return 0;
+                    });
+                    setArticles(sortedData);
+                } else if (categoryKey === 'trending') {
+                    // This is our personalized "Home Feed"
+                    const interests = await PersonalizationService.getInterests();
+                    const activity = await PersonalizationService.getActivity();
+                    const data = MockDataService.getPersonalizedFeed(interests, activity);
+                    setArticles(data);
+                } else {
+                    const data = MockDataService.getExploreSection(categoryKey, language);
+                    setArticles(data);
+                }
+            } catch (error) {
+                console.error("Error loading articles:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadArticles();
+    }, [categoryKey, language, searchQuery]);
 
     const initialIndex = React.useMemo(() => {
         if (!articles || !articles.length) return 0;
@@ -572,11 +631,33 @@ const CategoryList = ({ categoryKey, language, itemHeight, onOpenUrl }) => {
 
     const [activeIndex, setActiveIndex] = useState(initialIndex);
 
+    // Reset index when articles change (e.g. category switch)
+    useEffect(() => {
+        setActiveIndex(initialIndex);
+    }, [articles, initialIndex]);
+
     const onViewableItemsChanged = useRef(({ viewableItems }) => {
-        if (viewableItems.length > 0) setActiveIndex(viewableItems[0].index);
+        if (viewableItems.length > 0) {
+            const index = viewableItems[0].index;
+            setActiveIndex(index);
+
+            // Track activity for personalization
+            const item = articles[index];
+            if (item && item.category) {
+                PersonalizationService.trackActivity(item.category.toLowerCase(), 'VIEW');
+            }
+        }
     }).current;
 
     const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 50 }).current;
+
+    if (loading) {
+        return (
+            <View style={[styles.emptyContainer, { width: width, height: itemHeight }]}>
+                <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+        );
+    }
 
     if (articles.length === 0) {
         return (
@@ -621,6 +702,9 @@ const ShortsScreen = () => {
     const { language } = useLanguage();
     const { colors } = useTheme();
     const insets = useSafeAreaInsets();
+
+    const displayCategories = CATEGORIES;
+
     const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
     const [browserVisible, setBrowserVisible] = useState(false);
     const [browserUrl, setBrowserUrl] = useState('');
@@ -658,9 +742,9 @@ const ShortsScreen = () => {
         }
 
         if (targetCategory) {
-            const index = CATEGORIES.findIndex(cat => cat.key === targetCategory);
+            const index = displayCategories.findIndex(cat => cat.key === targetCategory);
             // Also try matching by name if key fails (backup)
-            const finalIndex = index !== -1 ? index : CATEGORIES.findIndex(cat => cat.name.toLowerCase() === targetCategory);
+            const finalIndex = index !== -1 ? index : displayCategories.findIndex(cat => cat.name.toLowerCase() === targetCategory);
 
             if (finalIndex !== -1 && finalIndex !== activeCategoryIndex) {
                 setTimeout(() => {
@@ -677,7 +761,7 @@ const ShortsScreen = () => {
     }, []);
 
     const handleCategoryPress = (index) => {
-        if (index < 0 || index >= CATEGORIES.length) return;
+        if (index < 0 || index >= displayCategories.length) return;
         setActiveCategoryIndex(index);
         horizontalScrollRef.current?.scrollTo({ x: index * width, animated: true });
 
@@ -717,10 +801,10 @@ const ShortsScreen = () => {
     }, [browserVisible]);
 
     const handleScroll = (event) => {
-        const xOffset = event.nativeEvent.contentOffset.x;
+        const xOffset = event.nativeEvent.contentOffset.x || 0;
         const index = Math.round(xOffset / width);
 
-        if (index !== activeCategoryIndex && index >= 0 && index < CATEGORIES.length) {
+        if (index !== activeCategoryIndex && index >= 0 && index < displayCategories.length) {
             setActiveCategoryIndex(index);
             categoryBarRef.current?.scrollToIndex({
                 index,
@@ -745,13 +829,13 @@ const ShortsScreen = () => {
             ]}>
                 <FlatList
                     ref={categoryBarRef}
-                    data={CATEGORIES}
+                    data={displayCategories}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.categoryBarContent}
                     renderItem={({ item, index }) => (
                         <TouchableOpacity
-                            key={item.key}
+                            key={item.key || item.name}
                             onPress={() => handleCategoryPress(index)}
                             style={[
                                 styles.categoryTab,
@@ -768,7 +852,7 @@ const ShortsScreen = () => {
                             </Text>
                         </TouchableOpacity>
                     )}
-                    keyExtractor={item => item.key}
+                    keyExtractor={item => item.key || item.name}
                 />
             </View>
 
@@ -783,16 +867,16 @@ const ShortsScreen = () => {
                     horizontal
                     pagingEnabled
                     showsHorizontalScrollIndicator={false}
-                    onScroll={handleScroll}
+                    onMomentumScrollEnd={handleScroll}
                     scrollEventThrottle={16}
                     nestedScrollEnabled={true}
                     style={[{ flex: 1 }, Platform.OS === 'web' && { scrollSnapType: 'x mandatory', overflowX: 'scroll' }]}
                     keyboardShouldPersistTaps="handled"
                     scrollEnabled={!browserVisible}
                 >
-                    {CATEGORIES.map((cat, index) => (
+                    {displayCategories.map((cat, index) => (
                         <View
-                            key={cat.key}
+                            key={cat.key || cat.name}
                             style={[
                                 { width: width, height: '100%' },
                                 Platform.OS === 'web' && { scrollSnapAlign: 'start' }
@@ -802,6 +886,7 @@ const ShortsScreen = () => {
                                 categoryKey={cat.key}
                                 language={language}
                                 itemHeight={itemHeight}
+                                searchQuery={cat.key === 'search' ? params?.searchQuery : null}
                                 onOpenUrl={openBrowser}
                             />
                         </View>

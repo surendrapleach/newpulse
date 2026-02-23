@@ -43,9 +43,9 @@ const BottomNavigation = () => {
             }
         ]}>
             <TabItem
-                icon="compass"
-                screenName={SCREENS.EXPLORE}
-                active={getActive(SCREENS.EXPLORE)}
+                icon="search"
+                screenName={SCREENS.SEARCH}
+                active={getActive(SCREENS.SEARCH)}
                 onPress={navigate}
             />
             <TabItem
@@ -55,9 +55,9 @@ const BottomNavigation = () => {
                 onPress={navigate}
             />
             <TabItem
-                icon="bookmark"
-                screenName={SCREENS.SAVED}
-                active={getActive(SCREENS.SAVED)}
+                icon="sparkles"
+                screenName={SCREENS.AI}
+                active={getActive(SCREENS.AI)}
                 onPress={navigate}
             />
             <TabItem

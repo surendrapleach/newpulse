@@ -33,7 +33,7 @@ const DailyBriefingCard = ({ onPress }) => {
             style={styles.container}
         >
             <LinearGradient
-                colors={['#6366f1', '#a855f7']} // Blue-Violet gradient like the image
+                colors={['#005656', '#008080']} // Pleach Green gradient
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0.5 }}
                 style={styles.gradient}
@@ -63,7 +63,7 @@ const DailyBriefingCard = ({ onPress }) => {
                         <Ionicons
                             name={isPlaying ? "pause" : "play"}
                             size={18}
-                            color="#4f46e5"
+                            color="#005656"
                             style={{ marginRight: 6 }}
                         />
                         <NativeText style={styles.listenButtonText}>
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         marginBottom: spacing.l,
         marginHorizontal: spacing.l,
         borderRadius: radius.xl, // 24px or similar for deep rounding
-        shadowColor: "#4f46e5",
+        shadowColor: "#005656",
         shadowOffset: { width: 0, height: 8 },
         shadowOpacity: 0.25,
         shadowRadius: 12,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     listenButtonText: {
-        color: '#4f46e5', // INDIGO-600
+        color: '#005656',
         fontWeight: '700',
         fontSize: 14,
     },

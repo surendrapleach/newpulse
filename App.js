@@ -43,6 +43,9 @@ import Signup from './src/screens/register/Signup';
 import AutoScrollingScreen from './src/screens/profile/AutoScrolling';
 import ChangePasswordScreen from './src/screens/profile/ChangePassword';
 import EditProfileScreen from './src/screens/profile/EditProfile';
+import InterestSelection from './src/screens/onboarding/InterestSelection';
+import AskAnythingScreen from './src/screens/ai/AskAnythingScreen';
+import SearchResultsScreen from './src/screens/explore/SearchResultsScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -52,9 +55,9 @@ const ScreenRenderer = () => {
   const [prevScreen, setPrevScreen] = useState(SCREENS.SPLASH);
 
   const TAB_ORDER = {
-    [SCREENS.HOME]: 0,
-    [SCREENS.EXPLORE]: 1,
-    [SCREENS.SAVED]: 2,
+    [SCREENS.SEARCH]: 0,
+    [SCREENS.HOME]: 1,
+    [SCREENS.AI]: 2,
     [SCREENS.PROFILE]: 3,
   };
 
@@ -62,8 +65,8 @@ const ScreenRenderer = () => {
     let startValue = 0;
 
     const isTabSwitch =
-      Object.values(TAB_ORDER).includes(TAB_ORDER[currentScreen]) &&
-      Object.values(TAB_ORDER).includes(TAB_ORDER[prevScreen]);
+      Object.keys(TAB_ORDER).includes(currentScreen) &&
+      Object.keys(TAB_ORDER).includes(prevScreen);
 
     if (isTabSwitch) {
       const currentOrder = TAB_ORDER[currentScreen];
@@ -71,10 +74,11 @@ const ScreenRenderer = () => {
 
       if (currentOrder > prevOrder) {
         startValue = width;
-      } else {
+      } else if (currentOrder < prevOrder) {
         startValue = -width;
       }
     }
+    // ... animation logic remains same
     else if (prevScreen === SCREENS.LOGIN && currentScreen === SCREENS.SIGNUP) {
       startValue = width;
     } else if (prevScreen === SCREENS.SIGNUP && currentScreen === SCREENS.LOGIN) {
@@ -117,12 +121,14 @@ const ScreenRenderer = () => {
         return <SplashScreen />;
       case SCREENS.HOME:
         return <HomeScreen />;
-      case SCREENS.EXPLORE:
+      case SCREENS.SEARCH:
         return <Explore />;
       case SCREENS.SAVED:
         return <SavedScreen />;
       case SCREENS.PROFILE:
         return <ProfileScreen />;
+      case SCREENS.AI:
+        return <AskAnythingScreen />;
       case SCREENS.REGISTER:
         return <Register />;
       case SCREENS.LOGIN:
@@ -143,6 +149,10 @@ const ScreenRenderer = () => {
         return <ChangePasswordScreen />;
       case SCREENS.EDIT_PROFILE:
         return <EditProfileScreen />;
+      case SCREENS.INTEREST_SELECTION:
+        return <InterestSelection />;
+      case SCREENS.SEARCH_RESULTS:
+        return <SearchResultsScreen />;
       default:
         return <HomeScreen />;
     }
@@ -170,6 +180,8 @@ const MainApp = () => { // Renamed from MainLayout to MainApp
     currentScreen !== SCREENS.REGISTER &&
     currentScreen !== SCREENS.LOGIN &&
     currentScreen !== SCREENS.SIGNUP &&
+    currentScreen !== SCREENS.INTEREST_SELECTION &&
+    currentScreen !== SCREENS.SEARCH_RESULTS &&
     currentScreen !== SCREENS.FORGOT_PASSWORD;
 
   return (

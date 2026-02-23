@@ -29,6 +29,18 @@ const pallet = {
     orange800: '#9A3412',
     orange900: '#7C2D12',
 
+    // Brand Colors (Pleach Green)
+    pleach50: '#F0F9F9',
+    pleach100: '#D1EEEE',
+    pleach200: '#A3DCDC',
+    pleach300: '#6CBFBF',
+    pleach400: '#3D9999',
+    pleach500: '#005656', // Primary Brand
+    pleach600: '#004D4D',
+    pleach700: '#003F3F',
+    pleach800: '#003131',
+    pleach900: '#002626',
+
     // Status
     red500: '#EF4444',
     green500: '#22C55E',

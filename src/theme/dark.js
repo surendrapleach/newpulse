@@ -13,9 +13,9 @@ export const darkTheme = {
         textTertiary: colors.gray600,
         textInverse: colors.gray900,
 
-        primary: colors.orange500,
-        primaryLight: 'rgba(249, 115, 22, 0.2)',
-        primaryDark: colors.orange600,
+        primary: colors.pleach500,
+        primaryLight: 'rgba(0, 86, 86, 0.2)',
+        primaryDark: colors.pleach600,
 
         success: colors.green500,
         error: colors.red500,
@@ -29,10 +29,10 @@ export const darkTheme = {
         icon: colors.gray50,
         white: colors.white,
         black: colors.black,
-        secondary: colors.orange300,
+        secondary: colors.pleach300,
 
         border: colors.gray800,
-        borderFocus: colors.orange500,
+        borderFocus: colors.pleach500,
 
         cardBg: colors.gray900,
         inputBg: colors.gray800,

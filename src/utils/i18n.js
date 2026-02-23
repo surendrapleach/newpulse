@@ -7,7 +7,7 @@ export const LANGUAGE_OPTIONS = [
 
 export const STRINGS = {
   en: {
-    header_title: "Heritage Pulse",
+    header_title: "Heritej Pulse",
     header_subtitle: "Discover the heartbeat of India",
     header_phrase_traditions: "  Search traditions...",
     header_phrase_articles: "  Search articles...",

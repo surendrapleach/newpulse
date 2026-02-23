@@ -59,7 +59,8 @@ export const ARTICLES = [
         headline: "Annual Heritage Fest Celebrates Indian Arts",
         content: `The Hare Krishna Movement in Hyderabad recently organized its grand Annual Heritage & Cultural celebrations, known as the Heritage Fest, at the iconic Golden Temple in Banjara Hills. This flagship initiative, led by the cultural wing SUMEDHASA, saw enthusiastic participation from students and educators across the region. The festival serves as a vital platform for young minds to explore India’s timeless spiritual and ethical traditions through various creative arts.`,
         views: "2.1k",
-        likes: "450"
+        likes: "450",
+        tags: ["Festivals", "Spiritual", "Education", "Art"]
     },
     {
         id: "nt2",
@@ -251,6 +252,66 @@ export const ARTICLES = [
         likes: "480",
         region: "Pleach India"
     },
+    {
+        id: "u1",
+        title: "Konark Sun Temple: The Chariot of Time",
+        category: "Heritage",
+        isTrending: true,
+        isLatest: true,
+        publisher: "UNESCO",
+        sourceLink: "https://whc.unesco.org/en/list/246",
+        image: "https://images.unsplash.com/photo-1621252179027-94459d278660?q=80&w=400&auto=format&fit=crop",
+        headline: "Golden Era Architecture: The Sun Temple",
+        content: "The Konark Sun Temple, a UNESCO World Heritage site, is a 13th-century marvel designed as a colossal stone chariot with 24 intricately carved wheels. Built by King Narasimhadeva I, the temple is a masterpiece of Kalinga architecture, capturing the rays of the rising sun in its sanctuary. Every stone tells a story of celestial movements and ancient engineering, serving as a silent witness to Odisha's glorious maritime history and artistic excellence.",
+        views: "5.4k",
+        likes: "1.2k",
+        tags: ["UNESCO Sites", "Architecture", "Ancient Temples"]
+    },
+    {
+        id: "mu1",
+        title: "The Symmetry of Humayun's Tomb",
+        category: "History",
+        isTrending: false,
+        isLatest: true,
+        publisher: "Archaeological Survey of India",
+        sourceLink: "https://asi.nic.in/humayuns-tomb-delhi/",
+        image: "https://images.unsplash.com/photo-1585135497273-1a86b0994350?q=80&w=400&auto=format&fit=crop",
+        headline: "Mughal Architecture's First Grand Garden-Tomb",
+        content: "Humayun's Tomb in Delhi is the first distinct example of Mughal architecture in India. Commissioned by Bega Begum, it introduced the concept of the 'Charbagh'—a four-quadrant garden—which later reached its pinnacle with the Taj Mahal. The tomb's red sandstone structure and white marble inlay represent a perfect blend of Persian and Indian architectural styles, symbolizing the cultural synthesis of the Mughal era.",
+        views: "3.2k",
+        likes: "740",
+        tags: ["Mughal Architecture", "History", "Delhi"]
+    },
+    {
+        id: "fe1",
+        title: "Hornbill Festival: The Festival of Festivals",
+        category: "Events",
+        isTrending: true,
+        isLatest: false,
+        publisher: "Nagaland Tourism",
+        sourceLink: "https://www.hornbillfestival.com/",
+        image: "https://images.unsplash.com/photo-1540121443653-f725a396e95c?q=80&w=400&auto=format&fit=crop",
+        headline: "Celebrating the Tribal Spirit of Nagaland",
+        content: "The Hornbill Festival, held annually in Nagaland, is a vibrant celebration of the rich tribal heritage of the Naga people. Named after the Indian Hornbill bird, which is revered in tribal folklore, the festival brings together all 17 tribes of the state. Visitors experience traditional dances, indigenous crafts, and warrior songs, all set against the breathtaking backdrop of the Kisama Heritage Village. It is a powerful testament to the resilience and beauty of North East India's cultural mosaic.",
+        views: "4.8k",
+        likes: "1.1k",
+        tags: ["Indian Festivals", "Culture", "Nagaland"]
+    },
+    {
+        id: "h2",
+        title: "The Silent Stones of Hampi",
+        category: "Heritage",
+        isTrending: true,
+        isLatest: false,
+        publisher: "Karnataka Tourism",
+        sourceLink: "https://www.karnatakatourism.org/tourist-item/hampi/",
+        image: "https://images.unsplash.com/photo-1589182373726-e4f658ab50f0?q=80&w=400&auto=format&fit=crop",
+        headline: "Exploring the Ruins of the Vijayanagara Empire",
+        content: "Hampi, once the capital of the Vijayanagara Empire, is now a sprawling open-air museum of boulders and ruins. The Vitthala Temple, famous for its musical pillars and the iconic stone chariot, stands as a crowning jewel of 14th-century Dravidian architecture. Walking through the Hampi bazaar and the riverside temples, one can almost hear the echoes of a once-thriving metropolis that attracted travelers from across the medieval world.",
+        views: "6.1k",
+        likes: "1.5k",
+        tags: ["UNESCO Sites", "History", "Ancient Temples"]
+    },
 ];
 
 let savedArticleIds = ["nt1", "nt2", "l2"];
@@ -260,13 +321,13 @@ const truncate = (text, limit) => {
     return text.substring(0, limit).trim() + "...";
 };
 
-const mapArticle = (a) => ({
+const mapArticle = (a, index = 0) => ({
     ...a,
     headline: truncate(a.headline || a.title, 60),
     content: truncate(a.content, 300),
     image: (typeof a.image === 'string' && a.image) ? { uri: a.image } : a.image, // Handle remote/local images
     publisher: a.publisher || (a.id === "l2" ? "Deccan Chronicle" : a.id === "l3" ? "New Indian Express" : "Heritage Pulse"),
-    timestamp: a.timestamp || "Just now",
+    timestamp: a.isLatest ? "2h ago" : "1d ago",
     badge: a.badge || a.category || "Heritage",
     tags: a.tags || ["Heritage", "Culture"], // Default tags
     rating: a.rating || "4.8",
@@ -281,10 +342,33 @@ export const MockDataService = {
     getAllArticles: (lang) => ARTICLES.map(mapArticle),
     getExploreSection: (key, lang) => {
         let items = [];
-        if (key === 'topNews') items = ARTICLES.filter(a => a.isLatest);
-        else if (key === 'culturalEvents') items = ARTICLES.filter(a => a.isTrending);
-        else if (key === 'museums') items = ARTICLES.filter(a => ['museums', 'art'].includes(a.category.toLowerCase()));
-        else items = ARTICLES.filter(a => a.category.toLowerCase() === key.toLowerCase());
+        const lowerKey = key.toLowerCase();
+
+        // New Logic: First filter by specific article tags, then fall back to categories
+        items = ARTICLES.filter(a => {
+            const tags = (a.tags || []).map(t => t.toLowerCase());
+            const cat = a.category.toLowerCase();
+
+            // Check if user interest matches a tag or the category
+            return tags.includes(lowerKey) || cat === lowerKey;
+        });
+
+        // Special concept-based mappings for the "AI Summit" style thinking
+        if (items.length === 0) {
+            if (lowerKey === 'engineering') items = ARTICLES.filter(a => (a.tags || []).includes('Engineering') || a.title.toLowerCase().includes('architecture'));
+            else if (lowerKey === 'preservation') items = ARTICLES.filter(a => (a.title + a.content).toLowerCase().includes('nomination') || a.category === 'Heritage');
+            else if (lowerKey === 'spirituality') items = ARTICLES.filter(a => a.category === 'Culture' || (a.content && a.content.toLowerCase().includes('temple')));
+        }
+
+        // Standard functional sections
+        if (items.length === 0) {
+            if (lowerKey === 'topnews') items = ARTICLES.filter(a => a.isLatest);
+            else if (lowerKey === 'culturalevents') items = ARTICLES.filter(a => a.isTrending);
+        }
+
+        // Final safe fallback
+        if (items.length === 0) items = ARTICLES.slice(0, 5);
+
         return items.map(mapArticle);
     },
     getArticleById: (id) => mapArticle(ARTICLES.find(a => a.id === id) || ARTICLES[0]),
@@ -305,4 +389,60 @@ export const MockDataService = {
     },
     getExploreCategories: () => EXPLORE_CATEGORIES,
     refreshData: () => true, // Mock refresh
+
+    searchArticles: (query) => {
+        if (!query || query.trim().length === 0) return [];
+        const lowerQuery = query.toLowerCase().trim();
+
+        return ARTICLES.filter(a => {
+            const titleMatch = (a.title || "").toLowerCase().includes(lowerQuery);
+            const headlineMatch = (a.headline || "").toLowerCase().includes(lowerQuery);
+            const contentMatch = (a.content || "").toLowerCase().includes(lowerQuery);
+            const categoryMatch = (a.category || "").toLowerCase().includes(lowerQuery);
+            const tagMatch = (a.tags || []).some(t => t.toLowerCase().includes(lowerQuery));
+
+            return titleMatch || headlineMatch || contentMatch || categoryMatch || tagMatch;
+        }).map(mapArticle);
+    },
+
+    /**
+     * Get articles ranked by user personalization data
+     * @param {string[]} interests - Selected category keys
+     * @param {Object} activity - { categoryKey: score }
+     */
+    getPersonalizedFeed: (interests = [], activity = {}) => {
+        return ARTICLES.map(a => {
+            const mapped = mapArticle(a);
+            const cat = a.category.toLowerCase();
+            const tags = (a.tags || []).map(t => t.toLowerCase());
+
+            // Calculate personalized score based on "Interest Concepts"
+            let score = 0;
+
+            interests.forEach(interest => {
+                const lowerInterest = interest.toLowerCase();
+
+                // If it's a direct category match
+                if (cat === lowerInterest) score += 10;
+
+                // If it matches a specific tag (User perspective)
+                if (tags.includes(lowerInterest)) score += 15; // Tags are more specific/relevant
+
+                // Content-based keyword matching (the "AI thinking" part)
+                const contentBlob = (a.title + " " + a.headline + " " + a.content).toLowerCase();
+                if (contentBlob.includes(lowerInterest)) score += 5;
+            });
+
+            // Weight from implicit activity
+            if (activity[cat]) score += activity[cat];
+
+            // General momentum
+            if (a.isTrending) score += 2;
+            if (a.isLatest) score += 5;
+
+            return { ...mapped, _pScore: score };
+        })
+            .sort((a, b) => b._pScore - a._pScore)
+            .map(({ _pScore, ...item }) => item);
+    }
 };

@@ -13,9 +13,9 @@ export const lightTheme = {
         textTertiary: colors.gray400,
         textInverse: colors.white,
 
-        primary: colors.orange500,
-        primaryLight: colors.orange100,
-        primaryDark: colors.orange700,
+        primary: colors.pleach500,
+        primaryLight: colors.pleach100,
+        primaryDark: colors.pleach700,
 
         success: colors.green500,
         error: colors.red500,
@@ -23,7 +23,7 @@ export const lightTheme = {
         info: colors.blue500,
 
         border: colors.gray200,
-        borderFocus: colors.orange500,
+        borderFocus: colors.pleach500,
 
         // Aliases for backward compatibility
         text: colors.gray900,
@@ -32,7 +32,7 @@ export const lightTheme = {
         icon: colors.gray900,
         white: colors.white,
         black: colors.black,
-        secondary: colors.orange300, // Approximate secondary
+        secondary: colors.pleach300, // Approximate secondary
 
         cardBg: colors.white, // Ensure cardBg is effectively white for elevated cards on gray background
         inputBg: colors.gray50,
